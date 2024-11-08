@@ -12,7 +12,9 @@ export class UserService{
         const user= await  this.userSchema.aggregate([
             {
                 $match:{
-                    flag:'nuevo'                }
+                    flag:'nuevo',
+                    tipo:{$ne:'cliente'}
+                }
             },
             {
                 $lookup:{
@@ -32,7 +34,7 @@ export class UserService{
               
             },
             {
-                $unwind:{path:'$sucursal',preserveNullAndEmptyArrays:false}
+                $unwind:{path:'$sucursal',preserveNullAndEmptyArrays:true}
             },
 
         
@@ -42,14 +44,13 @@ export class UserService{
                     nombre:1,
                     ap_paterno:1,
                     ap_materno:1,
-                    sucursal:1
+                    sucursal:1,
+                    isActive:1
                 }
             }
 
 
-        ])
-        
-        
+        ])    
       try {
         const x = await  xlsx.fromBlankAsync()
         x.sheet(0).cell(`A1`).value('id')
@@ -57,7 +58,8 @@ export class UserService{
         x.sheet(0).cell(`C1`).value('apellido paterno')
         x.sheet(0).cell(`D1`).value('apellido materno')
         x.sheet(0).cell(`E1`).value('sucursal')
-        x.sheet(0).cell(`F1`).value('ubicacion')
+        x.sheet(0).cell(`F1`).value('estado')
+        x.sheet(0).cell(`G1`).value('ubicacion')
           for(let data=0; data < user.length; data ++  ){   
             const sucursal = user[data].sucursal;
             const sucursalNombre = sucursal ? sucursal.sucursal : 'Sin Sucursal';
@@ -67,6 +69,7 @@ export class UserService{
             x.sheet(0).cell(`C${data + 2}`).value(user[data].ap_paterno)
             x.sheet(0).cell(`D${data + 2}`).value(user[data].ap_paterno)
             x.sheet(0).cell(`E${data + 2}`).value(sucursalNombre)
+            x.sheet(0).cell(`F${data + 2}`).value(user[data].isActive)
         
            }
            

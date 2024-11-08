@@ -89,6 +89,14 @@ export class Users{
   @Prop()
   ubicacionAsistencia:string  
   @Prop()
+  isActive:boolean
+
+  
+  @Prop()
+  tipo:string
+
+
+  @Prop()
   flag:string  
 }
 
