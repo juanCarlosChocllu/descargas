@@ -21,24 +21,13 @@ export class UserService{
                     from:'Sucursal',
                     foreignField:'_id',
                     localField:'sucursal',
-                    as :'sucursal',
-                    pipeline:[
-                    {
-                        $project: {
-                            _id:0,
-                            sucursal:'$nombre'
-                        }
-                    }
-                    ]
+                    as :'sucursal'
                 },
               
             },
             {
                 $unwind:{path:'$sucursal',preserveNullAndEmptyArrays:true}
             },
-
-        
-           
             {
                 $project:{
                     nombre:1,
@@ -50,7 +39,8 @@ export class UserService{
             }
 
 
-        ])    
+        ])   
+
       try {
         const x = await  xlsx.fromBlankAsync()
         x.sheet(0).cell(`A1`).value('id')
@@ -61,18 +51,14 @@ export class UserService{
         x.sheet(0).cell(`F1`).value('estado')
         x.sheet(0).cell(`G1`).value('ubicacion')
           for(let data=0; data < user.length; data ++  ){   
-            const sucursal = user[data].sucursal;
-            const sucursalNombre = sucursal ? sucursal.sucursal : 'Sin Sucursal';
-      
+            const sucursal = user[data].sucursal.nombre;            
             x.sheet(0).cell(`A${data +2 }`).value(user[data]['_id'].toString())
             x.sheet(0).cell(`B${data +2 }`).value(user[data].nombre)
             x.sheet(0).cell(`C${data + 2}`).value(user[data].ap_paterno)
             x.sheet(0).cell(`D${data + 2}`).value(user[data].ap_paterno)
-            x.sheet(0).cell(`E${data + 2}`).value(sucursalNombre)
+            x.sheet(0).cell(`E${data + 2}`).value(sucursal)
             x.sheet(0).cell(`F${data + 2}`).value(user[data].isActive)
-        
            }
-           
           await  x.toFileAsync('./usuarios.xlsx')
            return  {status:HttpStatus.OK}
         

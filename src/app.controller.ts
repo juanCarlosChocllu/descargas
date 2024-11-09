@@ -28,15 +28,10 @@ export class AppController {
      return await  this.appService.lenteAgrupado()
   }
 
-
-
-  
   @Get('user/decargar/excel')
   async descargaUser(){
      return await  this.userService.descargaUser()
   }
-
-
 
   @Get('cliente/decargar')
    descargarCliente(){
@@ -45,10 +40,6 @@ export class AppController {
 
   }
 
-
-
-
-  
   @Get('productos/decargar')
   listarProductos(){
      return this.productosService.listarProductos()

@@ -9,7 +9,7 @@ import { ClienteService } from './cliente.service';
 import { ProductosService } from './productos.service';
 
 @Module({
-  imports: [MongooseModule.forRoot('mongodb://localhost:27017/nombre_bd'),
+  imports: [MongooseModule.forRoot('mongodb://kanna:kanna@localhost:27017/nombre_bd?authSource=admin'),
     MongooseModule.forFeature([
       {name:Lente.name, schema:LentesSchema},
       {name:Stock.name, schema:StockSchema},
