@@ -33,6 +33,11 @@ export class AppController {
      return await  this.userService.descargaUser()
   }
 
+  @Get('user/actualizar/ubicacion')
+  async actualizarUusuariosUbubicacion(){
+     return  this.userService.actualizarUusuariosUbubicacion()
+  }
+
   @Get('cliente/decargar')
    descargarCliente(){
      return this.clienteService.descargarCliente()

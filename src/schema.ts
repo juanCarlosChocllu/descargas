@@ -86,8 +86,8 @@ export class Users{
   ap_paterno:string
   @Prop()
   ap_materno:string
-  @Prop()
-  ubicacionAsistencia:string  
+  @Prop({type:Types.ObjectId, ref:'UbicacionTrabajo'})
+  ubicacionTrabajo:Types.ObjectId  
   @Prop()
   isActive:boolean
 
@@ -247,3 +247,15 @@ export class Sucursal {
 }
 
 export const sucursalSchema = SchemaFactory.createForClass(Sucursal);
+
+@Schema({ collection: 'UbicacionTrabajo' })
+export class UbicacionTrabajo {  
+  @Prop({ required: true })
+  nombre: string; 
+
+  @Prop({ required: true })
+  flag: string; 
+
+}
+
+export const UbicacionTrabajoSchema = SchemaFactory.createForClass(UbicacionTrabajo);

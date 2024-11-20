@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Cliente, ClienteSchema, Lente, LentesSchema, Precio, PrecioSchema, Producto, ProductoSchema, SalidadLente, SalidadLenteSchema, Stock, StockSchema, Sucursal, sucursalSchema, TotalStock, TotalStockSchema, Users, userSchema, Venta, VentaSchema } from './schema';
+import { Cliente, ClienteSchema, Lente, LentesSchema, Precio, PrecioSchema, Producto, ProductoSchema, SalidadLente, SalidadLenteSchema, Stock, StockSchema, Sucursal, sucursalSchema, TotalStock, TotalStockSchema, UbicacionTrabajo, UbicacionTrabajoSchema, Users, userSchema, Venta, VentaSchema } from './schema';
 import { UserService } from './user.service';
 import { ClienteService } from './cliente.service';
 import { ProductosService } from './productos.service';
@@ -20,7 +20,8 @@ import { ProductosService } from './productos.service';
       {name:Cliente.name, schema:ClienteSchema},
       {name:Producto.name, schema:ProductoSchema},
       {name:Precio.name, schema:PrecioSchema},
-      {name:Sucursal.name, schema:sucursalSchema}
+      {name:Sucursal.name, schema:sucursalSchema},
+      {name:UbicacionTrabajo.name, schema:UbicacionTrabajoSchema}
     ])
   ],
   controllers: [AppController],
