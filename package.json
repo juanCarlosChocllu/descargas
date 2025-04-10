@@ -22,6 +22,7 @@
   "dependencies": {
     "@types/xlsx-populate": "git+https://github.com/JanLoebel/types-xlsx-populate.git",
     "@nestjs/common": "^10.0.0",
+    "@nestjs/mapped-types": "*",
     "@nestjs/core": "^10.0.0",
     "@nestjs/mongoose": "^10.0.10",
     "@nestjs/platform-express": "^10.0.0",
