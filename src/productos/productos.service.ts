@@ -70,8 +70,7 @@ export class ProductosService {
 
             }
           }
-         ]).limit(100)
-         console.log(producto);
+         ])
          
         for (const p of  producto) {
           
