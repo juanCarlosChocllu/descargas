@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { PrecioReceta } from './schema/precios-receta.schema';
 import { Model } from 'mongoose';
 import * as  xlsx from "xlsx-populate";
+import { log } from 'node:util';
 
 @Injectable()
 export class PreciosRecetaService {
@@ -125,7 +126,7 @@ export class PreciosRecetaService {
     x.sheet(0).cell(`G1`).value('color')
     x.sheet(0).cell(`H1`).value('tipo precio')
     x.sheet(0).cell(`I1`).value('precio')
-    for (let index = 0; index < precio.length; index++) {
+    for (let index = 0; index < precio.length; index++) {  
       x.sheet(0).cell(`A${index +2 }`).value(precio[index].material)
       x.sheet(0).cell(`B${index +2 }`).value(precio[index].tipoLente)
       x.sheet(0).cell(`C${index +2 }`).value(precio[index].tipoColor)
