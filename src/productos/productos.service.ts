@@ -102,7 +102,7 @@ export class ProductosService {
       }
 
       const x = await xlsx.fromBlankAsync()
-           x.sheet(0).cell(`A1`).value('codigoQR')
+          x.sheet(0).cell(`A1`).value('codigoQR')
           x.sheet(0).cell(`B1`).value('producto')
           x.sheet(0).cell(`C1`).value('marca')
           x.sheet(0).cell(`D1`).value('color')
@@ -126,7 +126,7 @@ export class ProductosService {
             x.sheet(0).cell(`J${index +2 }`).value(productos[index].precio)
           }
           await  x.toFileAsync('./producto_precio.xlsx')
-    return  {status:HttpStatus.OK} ;
+    return {status:HttpStatus.OK};
   }
 
   findOne(id: number) {
