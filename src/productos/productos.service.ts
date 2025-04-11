@@ -24,7 +24,8 @@ export class ProductosService {
                  const producto = await this.producto.aggregate([
           {
             $match:{
-              precios:{$elemMatch:{tipoPrecio:new Types.ObjectId(data._id)}}
+              precios:{$elemMatch:{tipoPrecio:new Types.ObjectId(data._id)}},
+              tipoProducto:{$ne:'OTRO PRODUCTO'}
             }
           },
           {
@@ -35,7 +36,7 @@ export class ProductosService {
               as:'marca'
             }
           },
-          {$unwind:{path:'$marca'}},
+          {$unwind:{path:'$marca',preserveNullAndEmptyArrays:true}},
           {
             $lookup:{
               from:'Color',
@@ -44,7 +45,7 @@ export class ProductosService {
               as:'color'
             }
           },
-          {$unwind:{path:'$color'}},
+          {$unwind:{path:'$color',preserveNullAndEmptyArrays:true}},
 
           {
             $lookup:{
@@ -54,7 +55,8 @@ export class ProductosService {
               as:'tipoMontura'
             }
           },
-          {$unwind:{path:'$tipoMontura'}},
+          {$unwind:{path:'$tipoMontura', preserveNullAndEmptyArrays:true}},
+
          
           {
             $project:{
@@ -71,12 +73,7 @@ export class ProductosService {
             }
           }
          ])
-         
         for (const p of  producto) {
-          
-        
-          
-          
          const  precio =  p.precios.filter((i) => String(i.tipoPrecio) == String(data._id)
          )[0].precio;
           
