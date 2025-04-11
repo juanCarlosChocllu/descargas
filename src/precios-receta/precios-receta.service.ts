@@ -100,17 +100,35 @@ export class PreciosRecetaService {
         }
       },
       {
+        $group:{
+          _id:{
+            material:'$materiallente.nombre',
+            tipoLente:'$tipolente.nombre',
+            tipoColor:'$tipocolorlente.nombre',
+            tratamiento:'$tratamiento.nombre',
+            rangos:'$rango.nombre',
+            marca:'$marcalente.nombre',
+            color:'$colorlente.nombre',
+          },
+          
+          precios: { $push: {tipoPrecio: '$precios.abreviatura', precio:'$precio'} }
+
+        },
+        
+      },
+      
+      
+      {
         $project:{
-          material:'$materiallente.nombre',
-          tipoLente:'$tipolente.nombre',
-          tipoColor:'$tipocolorlente.nombre',
-          tratamiento:'$tratamiento.nombre',
-          rangos:'$rango.nombre',
-          marca:'$marcalente.nombre',
-          color:'$colorlente.nombre',
-          precio:1,
-          tipoPrecio:'$precios.nombre'
-        }
+          material: '$_id.material',
+          tipoLente: '$_id.tipoLente',
+          tipoColor: '$_id.tipoColor',
+          tratamiento: '$_id.tratamiento',
+          rangos: '$_id.rangos',
+          marca: '$_id.marca',
+          color: '$_id.color',
+          precios:1
+            }
       }
     ]
     )
@@ -124,8 +142,10 @@ export class PreciosRecetaService {
     x.sheet(0).cell(`E1`).value('rangos')
     x.sheet(0).cell(`F1`).value('marca')
     x.sheet(0).cell(`G1`).value('color')
-    x.sheet(0).cell(`H1`).value('tipo precio')
-    x.sheet(0).cell(`I1`).value('precio')
+    x.sheet(0).cell(`I1`).value('P1')
+    x.sheet(0).cell(`J1`).value('P2')
+    x.sheet(0).cell(`K1`).value('E1')
+    x.sheet(0).cell(`L1`).value('E2')
     for (let index = 0; index < precio.length; index++) {  
       x.sheet(0).cell(`A${index +2 }`).value(precio[index].material)
       x.sheet(0).cell(`B${index +2 }`).value(precio[index].tipoLente)
@@ -134,10 +154,20 @@ export class PreciosRecetaService {
       x.sheet(0).cell(`E${index +2 }`).value(precio[index].rangos)
       x.sheet(0).cell(`F${index +2 }`).value(precio[index].marca)
       x.sheet(0).cell(`G${index +2 }`).value(precio[index].color)
-      x.sheet(0).cell(`H${index +2 }`).value(precio[index].tipoPrecio)
-      x.sheet(0).cell(`I${index +2 }`).value(precio[index].precio)
-      
-      
+      for (let i = 0; i < precio[index].precios.length; i++) {
+        if(precio[index].precios[i].tipoPrecio == 'P1'){
+          x.sheet(0).cell(`I${index + 2 }`).value(precio[index].precios[i].precio)
+        }
+        if(precio[index].precios[i].tipoPrecio == 'P2'){
+          x.sheet(0).cell(`J${index + 2 }`).value(precio[index].precios[i].precio)
+        }
+        if(precio[index].precios[i].tipoPrecio == 'E1'){
+          x.sheet(0).cell(`K${index + 2 }`).value(precio[index].precios[i].precio)
+        }
+        if(precio[index].precios[i].tipoPrecio == 'E2'){
+          x.sheet(0).cell(`L${index + 2 }`).value(precio[index].precios[i].precio)
+        }   
+      }
     }
     await  x.toFileAsync('./recetas_precio.xlsx')
     return precio;

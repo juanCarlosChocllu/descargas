@@ -55,6 +55,7 @@ export class ProductosService {
             }
           },
           {$unwind:{path:'$tipoMontura'}},
+         
           {
             $project:{
               tipoProducto:1,
@@ -66,10 +67,12 @@ export class ProductosService {
               codigoQR:1,
               precios:1,
               tipoMontura:'$tipoMontura.nombre'
+
             }
           }
-         ])
-       
+         ]).limit(100)
+         console.log(producto);
+         
         for (const p of  producto) {
           
         
