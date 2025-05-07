@@ -57,3 +57,25 @@ export class Producto {
   codigoQR: string;
 }
 export const productoSchema = SchemaFactory.createForClass(Producto)
+
+
+@Schema({collection:'Servicio'})
+export class Servicio {
+  @Prop()
+  _id: Types.ObjectId;
+  @Prop()
+  nombre: string;
+  @Prop()
+  descripcion: Types.ObjectId;
+  
+  @Prop()
+  precios: [
+    {
+      tipoPrecio: Types.ObjectId;
+      precio: number;
+      tipoProducto: string;
+      flag: string;
+    },
+  ];
+}
+export const servicioSchema = SchemaFactory.createForClass(Servicio)
