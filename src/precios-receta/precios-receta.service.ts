@@ -5,8 +5,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { PrecioReceta } from './schema/precios-receta.schema';
 import { Model } from 'mongoose';
 import * as  xlsx from "xlsx-populate";
-import { log } from 'node:util';
-
 @Injectable()
 export class PreciosRecetaService {
   constructor(@InjectModel(PrecioReceta.name) private readonly precioReceta:Model<PrecioReceta>){}
@@ -96,7 +94,7 @@ export class PreciosRecetaService {
       {$unwind:'$precios'},
       {
         $match:{
-          'precios.abreviatura': { $in: ['P1', 'P2', 'E2', 'E1'] }
+          'precios.nombre': { $in: ['OPT-PARAG 1', 'OPT-PARAG 2'] }
         }
       },
      /* {
@@ -143,9 +141,9 @@ export class PreciosRecetaService {
     x.sheet(0).cell(`E1`).value('tratamiento')
     x.sheet(0).cell(`F1`).value('rangos')
     x.sheet(0).cell(`G1`).value('marca')
-    x.sheet(0).cell(`I1`).value('color')
-    x.sheet(0).cell(`J1`).value('tipo Precio')
-    x.sheet(0).cell(`K1`).value('monto')
+    x.sheet(0).cell(`H1`).value('color')
+    x.sheet(0).cell(`I1`).value('tipo Precio')
+    x.sheet(0).cell(`J1`).value('monto')
   
     for (let index = 0; index < precio.length; index++) {  
       x.sheet(0).cell(`A${index +2 }`).value(String(precio[index]._id))
@@ -155,9 +153,9 @@ export class PreciosRecetaService {
       x.sheet(0).cell(`E${index +2 }`).value(precio[index].tratamiento)
       x.sheet(0).cell(`F${index +2 }`).value(precio[index].rangos)
       x.sheet(0).cell(`G${index +2 }`).value(precio[index].marca)
-      x.sheet(0).cell(`I${index +2 }`).value(precio[index].color)
-      x.sheet(0).cell(`J${index +2 }`).value(precio[index].tipoPrecio)
-      x.sheet(0).cell(`K${index +2 }`).value(precio[index].precio)
+      x.sheet(0).cell(`H${index +2 }`).value(precio[index].color)
+      x.sheet(0).cell(`I${index +2 }`).value(precio[index].tipoPrecio)
+      x.sheet(0).cell(`J${index +2 }`).value(precio[index].precio)
      /* for (let i = 0; i < precio[index].precios.length; i++) {
         if(precio[index].precios[i].tipoPrecio == 'P1'){
           x.sheet(0).cell(`I${index + 2 }`).value(precio[index].precios[i].precio)
