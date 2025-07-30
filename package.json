@@ -20,12 +20,13 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@types/xlsx-populate": "git+https://github.com/JanLoebel/types-xlsx-populate.git",
     "@nestjs/common": "^10.0.0",
-    "@nestjs/mapped-types": "*",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^10.0.10",
     "@nestjs/platform-express": "^10.0.0",
+    "@types/xlsx-populate": "git+https://github.com/JanLoebel/types-xlsx-populate.git",
+    "exceljs": "^4.4.0",
     "mongoose": "^8.5.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

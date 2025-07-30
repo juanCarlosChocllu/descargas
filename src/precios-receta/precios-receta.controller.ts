@@ -11,12 +11,17 @@ export class PreciosRecetaController {
   create(@Body() createPreciosRecetaDto: CreatePreciosRecetaDto) {
     return this.preciosRecetaService.create(createPreciosRecetaDto);
   }
+  @Post('2')
+  crearCombiancion(@Body() createPreciosRecetaDto: CreatePreciosRecetaDto) {
+    return this.preciosRecetaService.crearCombiancion();
+  }
 
   @Get()
   findAll() {
-    
     return this.preciosRecetaService.findAll();
   }
+
+  
 
   @Get(':id')
   findOne(@Param('id') id: string) {
