@@ -55,7 +55,7 @@ export class PreciosRecetaService {
   ) {}
 
   async create(createPreciosRecetaDto: CreatePreciosRecetaDto) {
-    const filePath = path.join(__dirname, '../../recetas_precio.xlsx');
+    const filePath = path.join(__dirname, '../../recetas_actualizar.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -164,7 +164,7 @@ export class PreciosRecetaService {
   }
 
   async crearCombiancion() {
-    const filePath = path.join(__dirname, '../../recetas_precio2.xlsx');
+    const filePath = path.join(__dirname, '../../recetas_nuevo.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
