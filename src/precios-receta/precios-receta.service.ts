@@ -79,8 +79,6 @@ export class PreciosRecetaService {
           continue;
         }
 
-    
-
         const receta = await this.precioReceta.findOne({
           _id: new Types.ObjectId(String(codigoMia)),
         });
@@ -110,7 +108,7 @@ export class PreciosRecetaService {
         'rango', rangosRes.nombre,
         'marca',marcas.nombre,
         'color', colorL.nombre
-      );*/
+       );*/
 
           if (
             materiales &&
@@ -131,13 +129,11 @@ export class PreciosRecetaService {
               colorlente: colorL._id,
               precio: Number(monto),
             };
-          
 
             const update = await this.precioReceta.updateOne(
               { _id: new Types.ObjectId(String(codigoMia)) },
               data,
             );
-           
           } else {
             console.log(
               'material',
@@ -243,7 +239,6 @@ export class PreciosRecetaService {
           console.log(data);
 
           await this.precioReceta.create(data);
-          
         }
       }
     }
@@ -333,7 +328,7 @@ export class PreciosRecetaService {
       { $unwind: '$precios' },
       {
         $match: {
-          'precios.nombre': { $in: ['OPT-PARAG 1', 'OPT-PARAG 2'] },
+          'precios.nombre': { $in: ['PRECIO 1', 'PRECIO 2'] },
         },
       },
       /* {
@@ -430,16 +425,36 @@ export class PreciosRecetaService {
     await x.toFileAsync('./recetas_precio.xlsx');
     return precio;
   }
+  async actualizarPrecios() {
+    const filePath = path.join(__dirname, '../../masivo_transition.xlsx');
+    const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
+      entries: 'emit',
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} preciosReceta`;
-  }
+    let contador = 0;
+    for await (const hojas of workbook) {
+      for await (const hoja of hojas) {
+        contador++;
+        const codigoMia = hoja.getCell(1).value;
+        const precio = hoja.getCell(10).value;
+        console.log(precio);
 
-  update(id: number, updatePreciosRecetaDto: UpdatePreciosRecetaDto) {
-    return `This action updates a #${id} preciosReceta`;
-  }
+        if (contador == 1) {
+          continue;
+        }
 
-  remove(id: number) {
-    return `This action removes a #${id} preciosReceta`;
+        if (codigoMia) {
+          const receta = await this.precioReceta.findOne({
+            _id: new Types.ObjectId(codigoMia.toString()),
+          });
+          if (receta) {
+            await this.precioReceta.updateOne(
+              { _id: new Types.ObjectId(codigoMia.toString()) },
+              { precio: Number(precio) },
+            );
+          }
+        }
+      }
+    }
   }
 }
