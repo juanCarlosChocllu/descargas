@@ -18,6 +18,7 @@ import * as xlsx from 'xlsx-populate';
 import * as Exceljs from 'exceljs';
 import * as path from 'path';
 import { Precio } from 'src/schema';
+import { flag } from 'src/enum';
 
 export interface DatosLente {
   materiallente: Types.ObjectId;
@@ -160,7 +161,7 @@ export class PreciosRecetaService {
   }
 
   async crearCombiancion() {
-    const filePath = path.join(__dirname, '../../recetas_nuevo.xlsx');
+    const filePath = path.join(__dirname, '../../VisionSencillaEcoParaguay.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -183,9 +184,6 @@ export class PreciosRecetaService {
         if (contador == 1) {
           continue;
         }
-
-        console.log(material);
-
         const [
           materiales,
           tiposLente,
@@ -236,9 +234,19 @@ export class PreciosRecetaService {
             precio: Number(monto),
             precios: precios._id,
           };
-          console.log(data);
-
-          await this.precioReceta.create(data);
+          const receta = await this.precioReceta.findOne({...data, flag:flag.nuevo});
+          if (!receta) {
+            console.log(data);
+            await this.precioReceta.create({...data, flag:flag.nuevo}); 
+          }
+        }else {
+        console.table({'material':material, 
+        'tipoLente':tipoLente,
+        'tipo color':tipoColor,
+        'tratamientos': tratamiento,
+        'rango': rangos,
+        'marca':marca,
+        'color':colorLente})
         }
       }
     }
@@ -328,7 +336,7 @@ export class PreciosRecetaService {
       { $unwind: '$precios' },
       {
         $match: {
-          'precios.nombre': { $in: ['PRECIO 1', 'PRECIO 2'] },
+          'precios.nombre': { $in: ['ECO 1', 'ECO 2'] },
         },
       },
       /* {
@@ -348,6 +356,10 @@ export class PreciosRecetaService {
         },
         
       },*/
+
+      {
+        $limit: 2,
+      },
 
       {
         $project: {
@@ -422,7 +434,7 @@ export class PreciosRecetaService {
         }   
       }*/
     }
-    await x.toFileAsync('./recetas_precio.xlsx');
+    await x.toFileAsync('./recetas_econovision.xlsx');
     return precio;
   }
   async actualizarPrecios() {
