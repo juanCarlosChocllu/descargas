@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   ColorLente,
   ColorLenteSchema,
+  MapRecetaNovar,
+  MapRecetaNovaraSchema,
   MarcaLente,
   MarcaLenteSchema,
   MaterialLentes,
@@ -22,9 +24,11 @@ import {
 } from './schema/precios-receta.schema';
 import { Precio } from 'src/schema';
 import { precioSchema } from 'src/productos/schema/producto.schema';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     MongooseModule.forFeature([
       { name: PrecioReceta.name, schema: precioRecetaSchema },
 
@@ -36,6 +40,7 @@ import { precioSchema } from 'src/productos/schema/producto.schema';
       { name: MarcaLente.name, schema: MarcaLenteSchema },
       { name: ColorLente.name, schema: ColorLenteSchema },
       { name: Precio.name, schema: precioSchema },
+      { name: MapRecetaNovar.name, schema: MapRecetaNovaraSchema },
     ]),
   ],
   controllers: [PreciosRecetaController],

@@ -24,9 +24,21 @@ export class PreciosRecetaController {
   @Get()
   findAll() {
     return this.preciosRecetaService.findAll();
+  } 
+  
+  @Post('recetaNovar')
+  recetaNovar(@Body() createPreciosRecetaDto: CreatePreciosRecetaDto) {
+    return this.preciosRecetaService.recetaNovar();
   }
 
-  
+  @Post('sincro')
+  sincroNovar(@Body() createPreciosRecetaDto: CreatePreciosRecetaDto) {
+    return this.preciosRecetaService.sincroNovar();
+  }
 
-  
+
+  @Post('errores/:corregir')
+  errores(@Param('corregir') corregir :string) {
+    return this.preciosRecetaService.errores(corregir);
+  }
 }

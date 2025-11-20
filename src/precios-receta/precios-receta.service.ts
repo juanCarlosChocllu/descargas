@@ -1,9 +1,11 @@
 import { HttpCode, HttpStatus, Injectable } from '@nestjs/common';
 import { CreatePreciosRecetaDto } from './dto/create-precios-receta.dto';
 import { UpdatePreciosRecetaDto } from './dto/update-precios-receta.dto';
+import mongoose from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   ColorLente,
+  MapRecetaNovar,
   MarcaLente,
   MaterialLentes,
   PrecioReceta,
@@ -19,6 +21,8 @@ import * as Exceljs from 'exceljs';
 import * as path from 'path';
 import { Precio } from 'src/schema';
 import { flag } from 'src/enum';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 export interface DatosLente {
   materiallente: Types.ObjectId;
@@ -38,6 +42,9 @@ export class PreciosRecetaService {
     @InjectModel(PrecioReceta.name)
     private readonly precioReceta: Model<PrecioReceta>,
 
+    @InjectModel(MapRecetaNovar.name)
+    private readonly mapRecetaNovar: Model<MapRecetaNovar>,
+
     @InjectModel(MaterialLentes.name)
     private readonly materialLentesModel: Model<MaterialLentes>,
     @InjectModel(TipoLente.name)
@@ -53,6 +60,8 @@ export class PreciosRecetaService {
     private readonly colorLenteModel: Model<ColorLente>,
     @InjectModel(Precio.name)
     private readonly precioModel: Model<Precio>,
+
+    private readonly httpService: HttpService,
   ) {}
 
   async create(createPreciosRecetaDto: CreatePreciosRecetaDto) {
@@ -161,7 +170,7 @@ export class PreciosRecetaService {
   }
 
   async crearCombiancion() {
-    const filePath = path.join(__dirname, '../../VisionSencillaEcoParaguay.xlsx');
+    const filePath = path.join(__dirname, '../../progresivospy.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -234,19 +243,27 @@ export class PreciosRecetaService {
             precio: Number(monto),
             precios: precios._id,
           };
-          const receta = await this.precioReceta.findOne({...data, flag:flag.nuevo});
+          const receta = await this.precioReceta.findOne({
+            ...data,
+            flag: flag.nuevo,
+          });
           if (!receta) {
             console.log(data);
-            await this.precioReceta.create({...data, flag:flag.nuevo}); 
+            await this.precioReceta.create({ ...data,  flag: flag.nuevo });
+          }else{
+            console.error('existe',data);
+            
           }
-        }else {
-        console.table({'material':material, 
-        'tipoLente':tipoLente,
-        'tipo color':tipoColor,
-        'tratamientos': tratamiento,
-        'rango': rangos,
-        'marca':marca,
-        'color':colorLente})
+        } else {
+          console.table({
+            material: material,
+            tipoLente: tipoLente,
+            'tipo color': tipoColor,
+            tratamientos: tratamiento,
+            rango: rangos,
+            marca: marca,
+            color: colorLente,
+          });
         }
       }
     }
@@ -467,6 +484,516 @@ export class PreciosRecetaService {
           }
         }
       }
+    }
+  }
+
+  async recetaNovar() {
+    const receta = await this.precioReceta.aggregate<{
+      materiallente: Types.ObjectId;
+      materialNovar: string;
+      tipolente: Types.ObjectId;
+      tipolenteNovar: string;
+      rango: Types.ObjectId;
+      rangoNovar: string;
+      tipocolorlente: Types.ObjectId;
+      tipocolorlenteNovar: string;
+      colorlente: Types.ObjectId;
+      colorlenteNovar: string;
+      marcalente: Types.ObjectId;
+      marcalenteNovar: string;
+      tratamiento: Types.ObjectId;
+      tratamientoNovar: string;
+    }>([
+      {
+        $match: {
+          flag: 'nuevo',
+        },
+      },
+      {
+        $lookup: {
+          from: 'MaterialLentes',
+          foreignField: '_id',
+          localField: 'materiallente',
+          as: 'materiallente',
+        },
+      },
+      { $unwind: '$materiallente' },
+      {
+        $lookup: {
+          from: 'TipoLente',
+          foreignField: '_id',
+          localField: 'tipolente',
+          as: 'tipolente',
+        },
+      },
+      { $unwind: '$tipolente' },
+      {
+        $lookup: {
+          from: 'Rango',
+          foreignField: '_id',
+          localField: 'rango',
+          as: 'rango',
+        },
+      },
+      { $unwind: '$rango' },
+      {
+        $lookup: {
+          from: 'TipoColorLente',
+          foreignField: '_id',
+          localField: 'tipocolorlente',
+          as: 'tipocolorlente',
+        },
+      },
+      { $unwind: '$tipocolorlente' },
+
+      {
+        $lookup: {
+          from: 'ColorLente',
+          foreignField: '_id',
+          localField: 'colorlente',
+          as: 'colorlente',
+        },
+      },
+      { $unwind: '$colorlente' },
+      {
+        $lookup: {
+          from: 'MarcaLente',
+          foreignField: '_id',
+          localField: 'marcalente',
+          as: 'marcalente',
+        },
+      },
+      { $unwind: '$marcalente' },
+      {
+        $match: {
+          'marcalente.nombre': {
+            $in: ['RODENSTOCK BIG NORM', 'RODENSTOCK LIFE', 'RODENSTOCK MYCOM'],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'Tratamiento',
+          foreignField: '_id',
+          localField: 'tratamiento',
+          as: 'tratamiento',
+        },
+      },
+      { $unwind: '$tratamiento' },
+
+      {
+        $group: {
+          _id: {
+            materiallente: '$materiallente._id',
+            tipolente: '$tipolente._id',
+            rango: '$rango._id',
+            tipocolorlente: '$tipocolorlente._id',
+            colorlente: '$colorlente._id',
+            marcalente: '$marcalente._id',
+            tratamiento: '$tratamiento._id',
+          },
+          materiallente: { $first: '$materiallente._id' },
+          materialNovar: { $first: '$materiallente.abreviaturaNovar' },
+          tipolente: { $first: '$tipolente._id' },
+          tipolenteNovar: { $first: '$tipolente.abreviaturaNovar' },
+          rango: { $first: '$rango._id' },
+          rangoNovar: { $first: '$rango.abreviaturaNovar' },
+          tipocolorlente: { $first: '$tipocolorlente._id' },
+          tipocolorlenteNovar: { $first: '$tipocolorlente.abreviaturaNovar' },
+          colorlente: { $first: '$colorlente._id' },
+          colorlenteNovar: { $first: '$colorlente.abreviaturaNovar' },
+          marcalente: { $first: '$marcalente._id' },
+          marcalenteNovar: { $first: '$marcalente.abreviaturaNovar' },
+          tratamiento: { $first: '$tratamiento._id' },
+          tratamientoNovar: { $first: '$tratamiento.abreviaturaNovar' },
+        },
+      },
+
+      {
+        $project: {
+          _id: 0,
+          materiallente: 1,
+          materialNovar: 1,
+          tipolente: 1,
+          tipolenteNovar: 1,
+          rango: 1,
+          rangoNovar: 1,
+          tipocolorlente: 1,
+          tipocolorlenteNovar: 1,
+          colorlente: 1,
+          colorlenteNovar: 1,
+          marcalente: 1,
+          marcalenteNovar: 1,
+          tratamiento: 1,
+          tratamientoNovar: 1,
+        },
+      },
+      {
+        $limit: 1,
+      },
+    ]);
+    for (const item of receta) {
+      const data = {
+        colorLente: item.colorlente,
+        marcaLente: item.marcalente,
+        materialLentes: item.materiallente,
+        rango: item.rango,
+        tipoColorLente: item.tipocolorlente,
+        tipoLente: item.tipolente,
+        tratamiento: item.tratamiento,
+      };
+      const map = await this.mapRecetaNovar.findOne(data);
+      if (!map) {
+        const resultado = await this.mapRecetaNovar.create(data);
+        console.log(resultado);
+
+        resultado.codigoNovar = String(resultado._id);
+        resultado.save();
+      }
+    }
+  }
+
+  async sincroNovar() {
+    const receta = await this.mapRecetaNovar.aggregate<{
+      materiallente: Types.ObjectId;
+      materialNovar: string;
+      tipolente: Types.ObjectId;
+      tipolenteNovar: string;
+      rango: Types.ObjectId;
+      rangoNovar: string;
+      tipocolorlente: Types.ObjectId;
+      tipocolorlenteNovar: string;
+      colorlente: Types.ObjectId;
+      colorlenteNovar: string;
+      marcalente: Types.ObjectId;
+      marcalenteNovar: string;
+      tratamiento: Types.ObjectId;
+      tratamientoNovar: string;
+      codigoNovar: string;
+      tipolenteCodigo: string;
+      isAr: boolean;
+      isBlu: boolean;
+      isFoto: boolean;
+      tipolenteNombre: string;
+      rangoNombre: string;
+      materiallenteNombre: string;
+      tipocolorlenteNombre: string;
+      colorlenteNombre: string;
+      marcalenteNombre: string;
+      tratamientoNombre: string;
+      materiallenteCodigo: string;
+      rangoCodigoNovar: string;
+      codigosMap: Types.ObjectId[];
+    }>([
+      {
+        $match: {
+          novar: { $ne: true },
+        },
+      },
+      {
+        $lookup: {
+          from: 'MaterialLentes',
+          foreignField: '_id',
+          localField: 'materialLentes',
+          as: 'materiallente',
+        },
+      },
+      { $unwind: '$materiallente' },
+      {
+        $lookup: {
+          from: 'TipoLente',
+          foreignField: '_id',
+          localField: 'tipoLente',
+          as: 'tipolente',
+        },
+      },
+      { $unwind: '$tipolente' },
+      {
+        $lookup: {
+          from: 'Rango',
+          foreignField: '_id',
+          localField: 'rango',
+          as: 'rango',
+        },
+      },
+      { $unwind: '$rango' },
+      {
+        $lookup: {
+          from: 'TipoColorLente',
+          foreignField: '_id',
+          localField: 'tipoColorLente',
+          as: 'tipocolorlente',
+        },
+      },
+      { $unwind: '$tipocolorlente' },
+
+      {
+        $lookup: {
+          from: 'ColorLente',
+          foreignField: '_id',
+          localField: 'colorLente',
+          as: 'colorlente',
+        },
+      },
+      { $unwind: '$colorlente' },
+      {
+        $lookup: {
+          from: 'MarcaLente',
+          foreignField: '_id',
+          localField: 'marcaLente',
+          as: 'marcalente',
+        },
+      },
+      { $unwind: '$marcalente' },
+      {
+        $match: {
+          'marcalente.nombre': {
+            $in: ['RODENSTOCK BIG NORM', 'RODENSTOCK LIFE', 'RODENSTOCK MYCOM'],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'Tratamiento',
+          foreignField: '_id',
+          localField: 'tratamiento',
+          as: 'tratamiento',
+        },
+      },
+      { $unwind: '$tratamiento' },
+
+      {
+        $group: {
+          _id: {
+            materiallente: '$materiallente._id',
+            tipolente: '$tipolente._id',
+            rango: '$rango._id',
+            tipocolorlente: '$tipocolorlente._id',
+            colorlente: '$colorlente._id',
+            marcalente: '$marcalente._id',
+            tratamiento: '$tratamiento._id',
+          },
+          materiallente: { $first: '$materiallente._id' },
+          materialNovar: { $first: '$materiallente.abreviaturaNovar' },
+          materiallenteNombre: { $first: '$materiallente.nombre' },
+          materiallenteCodigo: { $first: '$materiallente.codigo' },
+
+          tipolente: { $first: '$tipolente._id' },
+          tipolenteNombre: { $first: '$tipolente.nombre' },
+          tipolenteNovar: { $first: '$tipolente.abreviaturaNovar' },
+          tipolenteCodigo: { $first: '$tipolente.codigo' },
+
+          rango: { $first: '$rango._id' },
+          rangoNovar: { $first: '$rango.abreviaturaNovar' },
+          rangoNombre: { $first: '$rango.nombre' },
+          rangoCodigoNovar: { $first: '$rango.codigoNovar' },
+
+          tipocolorlente: { $first: '$tipocolorlente._id' },
+          tipocolorlenteNovar: { $first: '$tipocolorlente.abreviaturaNovar' },
+          tipocolorlenteNombre: { $first: '$tipocolorlente.nombre' },
+
+          colorlente: { $first: '$colorlente._id' },
+          colorlenteNovar: { $first: '$colorlente.abreviaturaNovar' },
+          colorlenteNombre: { $first: '$colorlente.nombre' },
+
+          marcalente: { $first: '$marcalente._id' },
+          marcalenteNovar: { $first: '$marcalente.abreviaturaNovar' },
+          marcalenteNombre: { $first: '$marcalente.nombre' },
+
+          tratamiento: { $first: '$tratamiento._id' },
+          tratamientoNovar: { $first: '$tratamiento.abreviaturaNovar' },
+          tratamientoNombre: { $first: '$tratamiento.nombre' },
+
+          codigoNovar: { $first: '$codigoNovar' },
+          isAr: { $first: '$tratamiento.isAr' },
+          isBlu: { $first: '$tratamiento.isBlu' },
+          isFoto: { $first: '$tratamiento.isFoto' },
+          codigosMap: { $addToSet: '$_id' },
+        },
+      },
+
+      {
+        $project: {
+          _id: 0,
+          materiallente: 1,
+          materialNovar: 1,
+          tipolente: 1,
+          tipolenteNovar: 1,
+          tipolenteCodigo: 1,
+          rango: 1,
+          rangoNovar: 1,
+          tipocolorlente: 1,
+          tipocolorlenteNovar: 1,
+          colorlente: 1,
+          colorlenteNovar: 1,
+          marcalente: 1,
+          marcalenteNovar: 1,
+          tratamiento: 1,
+          tratamientoNovar: 1,
+          codigoNovar: 1,
+          isAr: 1,
+          isBlu: 1,
+          isFoto: 1,
+          tipolenteNombre: 1,
+          rangoNombre: 1,
+          materiallenteNombre: 1,
+          tipocolorlenteNombre: 1,
+          colorlenteNombre: 1,
+          marcalenteNombre: 1,
+          tratamientoNombre: 1,
+          materiallenteCodigo: 1,
+          rangoCodigoNovar: 1,
+          codigosMap: 1,
+        },
+      },
+      {
+        $limit: 10,
+      },
+    ]);
+
+    const url =
+      'https://opticentrotest.azurewebsites.net/api/servicios/serviciosapi/productoasync';
+    for (const item of receta) {
+      const codigoProductoNovar =
+        `${item.materialNovar ?? ''}_` +
+        `${item.tipolenteNovar ?? ''}_` +
+        `${item.tipocolorlenteNovar ?? ''}_` +
+        `${item.tratamientoNovar ?? ''}_` +
+        `${item.rangoNovar ?? ''}_` +
+        `${item.marcalenteNovar ?? ''}_` +
+        `${item.colorlenteNovar ?? ''}`;
+
+      let nombre = `${item.tipolenteNombre} ${item.materiallenteNombre}`;
+
+      if (item.tipocolorlenteNombre != 'SIN COLOR') {
+        nombre += ` ${item.tipocolorlenteNombre}`;
+      }
+
+      if (item.colorlenteNombre != 'SIN COLOR') {
+        nombre += ` ${item.colorlenteNombre}`;
+      }
+
+      if (item.marcalenteNombre != 'SIN MARCA') {
+        nombre += ` ${item.marcalenteNombre}`;
+      }
+      if (item.tratamientoNombre != 'SIN TRATAMIENTO') {
+        nombre += ` ${item.tratamientoNombre}`;
+      }
+      nombre += ` ${item.rangoNombre}`;
+      const data = {
+        LoginApi: {
+          Idioma: '',
+          Login: '',
+          Clave: '',
+          ApiKey: '',
+        },
+        Codigo: codigoProductoNovar,
+        CodigoErp: item.codigoNovar,
+        Nombre: nombre,
+        Descripcion: nombre,
+        CodigoLaboratorio: '0001',
+        CodigoMarca: item.rangoCodigoNovar ? item.rangoCodigoNovar : '',
+        CodigoTipoProducto: 'LEN',
+        CodigoTipoMaterial: item.materiallenteCodigo,
+        CodigoTipoBase: item.tipolenteNovar,
+        TipoVision: item.tipolenteCodigo,
+        IsAr: item.isAr,
+        IsBlu: item.isBlu,
+        IsFoto: item.isFoto,
+        TipoOperacion: 1,
+      };
+
+      const response = await firstValueFrom(this.httpService.post(url, data));
+      if (response.data.IsOk == false) {
+        let nombre = `${item.tipolenteNombre} ${item.materiallenteNombre} ${item.tipocolorlenteNombre} ${item.colorlenteNombre} ${item.marcalenteNombre} ${item.tratamientoNombre}  ${item.rangoNombre}`;
+
+        console.error(nombre);
+        console.error(data);
+        console.error(response.data.Mensajes);
+      } else {
+        console.log(data.Codigo);
+        console.log(response.data);
+        for (const id of item.codigosMap) {
+          await this.mapRecetaNovar.updateOne(
+            { _id: new Types.ObjectId(id) },
+            { $set: { novar: true } },
+          );
+        }
+      }
+    }
+  }
+
+  /*async errores() {
+
+
+  const inicio = new Date();
+  inicio.setHours(9, 0, 0, 0);
+
+
+  const fin = new Date();
+  fin.setHours(10, 0, 0, 0);
+  const objectIdInicio = new mongoose.Types.ObjectId(
+    Math.floor(inicio.getTime() / 1000).toString(16) + "0000000000000000"
+  );
+
+  const objectIdFin = new mongoose.Types.ObjectId(
+    Math.floor(fin.getTime() / 1000).toString(16) + "0000000000000000"
+  );
+  console.log({ $gte: objectIdInicio, $lte: objectIdFin });
+  
+  const docs = await this.precioReceta
+    .find({
+      _id: { $gte: objectIdInicio, $lt: objectIdFin }
+    })
+  
+
+  console.log(`Registros entre 9:00 y 10:00:`, docs.length);
+    console.log(docs.length);
+    
+  docs.forEach(doc => {
+    console.log(doc._id.getTimestamp(), doc._id.toString(), doc.precio);
+  });
+}*/
+
+  async errores(corregir: string) {
+    const id: Types.ObjectId[] = [];
+    const inicioUTC = new Date(Date.UTC(2025, 10, 20, 14, 0, 0));
+    const finUTC = new Date(Date.UTC(2025, 10, 20, 15, 0, 0));
+
+    /* const inicioUTC = new Date(Date.UTC(2025, 10, 19, 23, 0, 0)); // 19 Nov 2025, 23:00 UTC
+    const finUTC = new Date(Date.UTC(2025, 10, 20, 0, 0, 0)); */ // 20 Nov 2025, 00:00 UTC
+
+    const objectIdInicio = new mongoose.Types.ObjectId(
+      Math.floor(inicioUTC.getTime() / 1000)
+        .toString(16)
+        .padStart(8, '0') + '0000000000000000',
+    );
+
+    const objectIdFin = new mongoose.Types.ObjectId(
+      Math.floor(finUTC.getTime() / 1000)
+        .toString(16)
+        .padStart(8, '0') + '0000000000000000',
+    );
+
+    console.log('RANGO:', { $gte: objectIdInicio, $lt: objectIdFin });
+
+    const docs = await this.precioReceta.find({
+      _id: { $gte: objectIdInicio, $lt: objectIdFin },
+    });
+
+    console.log('registro', docs.length);
+
+    docs.forEach((doc) => {
+      id.push(doc._id);
+       console.log(doc._id.getTimestamp(), doc._id.toString());
+    });
+  
+    if (corregir === 'true') {
+      const response = await this.precioReceta.updateMany(
+        { _id: { $in: id } },
+        { $set: { flag: flag.eliminado, estado: 'error de carga' } }
+      );
+      console.log(response);
     }
   }
 }

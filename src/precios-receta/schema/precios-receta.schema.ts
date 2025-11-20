@@ -25,76 +25,94 @@ export class PrecioReceta {
   precio: Number;
   @Prop()
   flag: string;
+  @Prop({type:Date, default:()=>Date.now() })
+  fechains: Date;
+  @Prop()
+  estado: string;
 }
-export const precioRecetaSchema= SchemaFactory.createForClass(PrecioReceta)
+export const precioRecetaSchema = SchemaFactory.createForClass(PrecioReceta);
 
-
-
-@Schema({collection:'MaterialLentes'})
+@Schema({ collection: 'MaterialLentes' })
 export class MaterialLentes {
-    @Prop()
-    nombre:string
+  @Prop()
+  nombre: string;
 }
-export const MaterialLentesSchema= SchemaFactory.createForClass(MaterialLentes)
+export const MaterialLentesSchema =
+  SchemaFactory.createForClass(MaterialLentes);
 
-
-@Schema({collection:'TipoLente'})
+@Schema({ collection: 'TipoLente' })
 export class TipoLente {
-    @Prop()
-    nombre:string
+  @Prop()
+  nombre: string;
 }
-export const TipoLenteSchema= SchemaFactory.createForClass(TipoLente)
+export const TipoLenteSchema = SchemaFactory.createForClass(TipoLente);
 
-
-@Schema({collection:'TipoColorLente'})
+@Schema({ collection: 'TipoColorLente' })
 export class TipoColorLente {
-    @Prop()
-    nombre:string
+  @Prop()
+  nombre: string;
 }
-export const TipoColorLenteSchema= SchemaFactory.createForClass(TipoColorLente)
+export const TipoColorLenteSchema =
+  SchemaFactory.createForClass(TipoColorLente);
 
-
-@Schema({collection:'Tratamiento'})
+@Schema({ collection: 'Tratamiento' })
 export class Tratamiento {
-    @Prop()
-    nombre:string
+  @Prop()
+  nombre: string;
 }
-export const tratamientoSchema= SchemaFactory.createForClass(Tratamiento)
+export const tratamientoSchema = SchemaFactory.createForClass(Tratamiento);
 
-
-
-@Schema({collection:'Rango'})
+@Schema({ collection: 'Rango' })
 export class Rango {
-    @Prop()
-    nombre:string
+  @Prop()
+  nombre: string;
 }
-export const RangoSchema= SchemaFactory.createForClass(Rango)
+export const RangoSchema = SchemaFactory.createForClass(Rango);
 
-
-@Schema({collection:'MarcaLente'})
+@Schema({ collection: 'MarcaLente' })
 export class MarcaLente {
-    @Prop()
-    nombre:string
+  @Prop()
+  nombre: string;
 }
-export const MarcaLenteSchema= SchemaFactory.createForClass(MarcaLente)
+export const MarcaLenteSchema = SchemaFactory.createForClass(MarcaLente);
 
-
-
-
-
-@Schema({collection:'ColorLente'})
+@Schema({ collection: 'ColorLente' })
 export class ColorLente {
-    @Prop()
-    nombre:string
+  @Prop()
+  nombre: string;
 }
-export const ColorLenteSchema= SchemaFactory.createForClass(ColorLente)
+export const ColorLenteSchema = SchemaFactory.createForClass(ColorLente);
 
-
-@Schema({collection:'Precio'})
+@Schema({ collection: 'Precio' })
 export class Precio {
-    @Prop()
-    nombre:string
+  @Prop()
+  nombre: string;
 }
-export const PrecioSchema= SchemaFactory.createForClass(Precio)
+export const PrecioSchema = SchemaFactory.createForClass(Precio);
 
+@Schema({ collection: 'MapRecetaNovar' })
+export class MapRecetaNovar {
+  /*@Prop()
+  _id?: Types.ObjectId;*/
+  @Prop()
+  materialLentes: Types.ObjectId;
+  @Prop()
+  tipoLente: Types.ObjectId;
+  @Prop()
+  rango: Types.ObjectId;
+  @Prop()
+  tipoColorLente: Types.ObjectId;
+  @Prop()
+  colorLente: Types.ObjectId;
+  @Prop()
+  marcaLente: Types.ObjectId;
+  @Prop()
+  tratamiento: Types.ObjectId;
+  @Prop()
+  codigoNovar: string;
 
+  @Prop()
+  novar: boolean;
+}
+export const MapRecetaNovaraSchema =
+  SchemaFactory.createForClass(MapRecetaNovar);

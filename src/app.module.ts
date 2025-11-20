@@ -10,8 +10,10 @@ import { ProductosService } from './productos.service';
 import { PreciosRecetaModule } from './precios-receta/precios-receta.module';
 import { ProductosModule } from './productos/productos.module';
 
+
 @Module({
-  imports: [MongooseModule.forRoot('mongodb://kanna:kanna@localhost:27017/11-11-2025?authSource=admin'),
+  imports: [
+    MongooseModule.forRoot('mongodb://kanna:kanna@localhost:27017/11-11-2025?authSource=admin'),
     MongooseModule.forFeature([
       {name:Lente.name, schema:LentesSchema},
       {name:Stock.name, schema:StockSchema},
