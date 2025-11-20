@@ -170,7 +170,7 @@ export class PreciosRecetaService {
   }
 
   async crearCombiancion() {
-    const filePath = path.join(__dirname, '../../progresivospy.xlsx');
+    const filePath = path.join(__dirname, '../../NoSistEcoPy.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -189,6 +189,7 @@ export class PreciosRecetaService {
         const colorLente = hoja.getCell(8).value;
         const precio = hoja.getCell(9).value;
         const monto = hoja.getCell(10).value;
+        console.log(monto);
 
         if (contador == 1) {
           continue;
@@ -243,16 +244,17 @@ export class PreciosRecetaService {
             precio: Number(monto),
             precios: precios._id,
           };
+          console.log(data, contador);
+
           const receta = await this.precioReceta.findOne({
             ...data,
             flag: flag.nuevo,
           });
           if (!receta) {
             console.log(data);
-            await this.precioReceta.create({ ...data,  flag: flag.nuevo });
-          }else{
-            console.error('existe',data);
-            
+            await this.precioReceta.create({ ...data, flag: flag.nuevo });
+          } else {
+            console.error('existe', data);
           }
         } else {
           console.table({
@@ -353,7 +355,7 @@ export class PreciosRecetaService {
       { $unwind: '$precios' },
       {
         $match: {
-          'precios.nombre': { $in: ['ECO 1', 'ECO 2'] },
+          'precios.nombre': { $in: ['ECOPY-1', 'ECOPY-2'] },
         },
       },
       /* {
@@ -374,9 +376,7 @@ export class PreciosRecetaService {
         
       },*/
 
-      {
-        $limit: 2,
-      },
+     
 
       {
         $project: {
@@ -451,7 +451,7 @@ export class PreciosRecetaService {
         }   
       }*/
     }
-    await x.toFileAsync('./recetas_econovision.xlsx');
+    await x.toFileAsync('./recetas_econovision_paraguay.xlsx');
     return precio;
   }
   async actualizarPrecios() {
@@ -985,15 +985,41 @@ export class PreciosRecetaService {
 
     docs.forEach((doc) => {
       id.push(doc._id);
-       console.log(doc._id.getTimestamp(), doc._id.toString());
+      console.log(doc._id.getTimestamp(), doc._id.toString());
     });
-  
+
     if (corregir === 'true') {
       const response = await this.precioReceta.updateMany(
         { _id: { $in: id } },
-        { $set: { flag: flag.eliminado, estado: 'error de carga' } }
+        { $set: { flag: flag.eliminado, estado: 'error de carga' } },
       );
       console.log(response);
     }
+  }
+
+  async eliminarpy2() {
+    const data = await this.precioReceta.aggregate<{_id:Types.ObjectId, nombre:string}>([
+      {
+        $lookup: {
+          from: 'Precio',
+          foreignField: '_id',
+          localField: 'precios',
+          as: 'precios',
+        },
+      },
+      { $unwind: '$precios' },
+      {
+        $match: {
+          'precios.nombre': 'ECOPY-2',
+        },
+      },
+      {
+        $project:{
+          _id:1,
+          nombre:'$precios.nombre'
+        }
+      }
+    ]);
+    console.log(data);
   }
 }

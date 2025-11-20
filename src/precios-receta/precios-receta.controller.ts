@@ -41,4 +41,10 @@ export class PreciosRecetaController {
   errores(@Param('corregir') corregir :string) {
     return this.preciosRecetaService.errores(corregir);
   }
+
+
+   @Post('py2')
+  eliminarpy2() {
+    return this.preciosRecetaService.eliminarpy2();
+  }
 }
