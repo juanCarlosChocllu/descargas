@@ -476,6 +476,8 @@ export class PreciosRecetaService {
           const receta = await this.precioReceta.findOne({
             _id: new Types.ObjectId(codigoMia.toString()),
           });
+         
+          
           if (receta) {
             const resultado=  await this.precioReceta.updateOne(
               { _id: new Types.ObjectId(codigoMia.toString()) },
