@@ -455,7 +455,7 @@ export class PreciosRecetaService {
     return precio;
   }
   async actualizarPrecios() {
-    const filePath = path.join(__dirname, '../../masivo_transition.xlsx');
+    const filePath = path.join(__dirname, '../../recetas_econovision_paraguay.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -466,7 +466,7 @@ export class PreciosRecetaService {
         contador++;
         const codigoMia = hoja.getCell(1).value;
         const precio = hoja.getCell(10).value;
-        console.log(precio);
+        console.log(codigoMia,precio);
 
         if (contador == 1) {
           continue;
@@ -477,11 +477,16 @@ export class PreciosRecetaService {
             _id: new Types.ObjectId(codigoMia.toString()),
           });
           if (receta) {
-            await this.precioReceta.updateOne(
+            const resultado=  await this.precioReceta.updateOne(
               { _id: new Types.ObjectId(codigoMia.toString()) },
               { precio: Number(precio) },
             );
+            console.log(resultado);
+            
           }
+        }
+        if(contador == 2){
+          break
         }
       }
     }
