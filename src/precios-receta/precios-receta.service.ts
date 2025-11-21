@@ -455,7 +455,7 @@ export class PreciosRecetaService {
     return precio;
   }
   async actualizarPrecios() {
-    const filePath = path.join(__dirname, '../../recetas_econovision_paraguay.xlsx');
+    const filePath = path.join(__dirname, '../../20251121recetas_econovision_paraguay.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -485,9 +485,7 @@ export class PreciosRecetaService {
             
           }
         }
-        if(contador == 2){
-          break
-        }
+        
       }
     }
   }
