@@ -335,6 +335,13 @@ export class PreciosRecetaService {
         },
       },
       { $unwind: '$marcalente' },
+       {
+        $match: {
+          'marcalente.nombre': {
+            $in: ['RODENSTOCK BIG NORM', 'RODENSTOCK LIFE', 'RODENSTOCK MYCOM'],
+          },
+        },
+      },
       {
         $lookup: {
           from: 'Tratamiento',
@@ -353,11 +360,11 @@ export class PreciosRecetaService {
         },
       },
       { $unwind: '$precios' },
-      {
+     /* {
         $match: {
           'precios.nombre': { $in: ['ECOPY-1', 'ECOPY-2'] },
         },
-      },
+      },*/
       /* {
         $group:{
           _id:{
