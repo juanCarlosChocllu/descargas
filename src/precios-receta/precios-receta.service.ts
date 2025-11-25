@@ -273,6 +273,43 @@ export class PreciosRecetaService {
     return { status: HttpStatus.OK };
   }
 
+  async actualizarRangos() {
+    const filePath = path.join(__dirname, '../../rangos_rds.xlsx');
+    const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
+      entries: 'emit',
+    });
+
+    let contador = 0;
+    for await (const hojas of workbook) {
+      for await (const hoja of hojas) {
+        contador++;
+        const codigoMia = hoja.getCell(1).value;
+        const rangos = hoja.getCell(6).value;
+
+        if (contador == 1) {
+          continue;
+        }
+
+        if (codigoMia) {
+          const [receta, rango] = await Promise.all([
+            this.precioReceta.findOne({
+              _id: new Types.ObjectId(codigoMia.toString()),
+            }),
+            this.rangoModel.findOne({ nombre: rangos }),
+          ]);
+
+          if (receta && rango) {
+            const resultado = await this.precioReceta.updateOne(
+              { _id: receta },
+              { rango: rango._id },
+            );
+            console.log(resultado);
+          }
+        }
+      }
+    }
+  }
+
   async findAll() {
     const precio = await this.precioReceta.aggregate([
       {
@@ -335,7 +372,7 @@ export class PreciosRecetaService {
         },
       },
       { $unwind: '$marcalente' },
-       {
+      {
         $match: {
           'marcalente.nombre': {
             $in: ['RODENSTOCK BIG NORM', 'RODENSTOCK LIFE', 'RODENSTOCK MYCOM'],
@@ -360,7 +397,7 @@ export class PreciosRecetaService {
         },
       },
       { $unwind: '$precios' },
-     /* {
+      /* {
         $match: {
           'precios.nombre': { $in: ['ECOPY-1', 'ECOPY-2'] },
         },
@@ -382,8 +419,6 @@ export class PreciosRecetaService {
         },
         
       },*/
-
-     
 
       {
         $project: {
@@ -462,7 +497,10 @@ export class PreciosRecetaService {
     return precio;
   }
   async actualizarPrecios() {
-    const filePath = path.join(__dirname, '../../20251121recetas_econovision_paraguay.xlsx');
+    const filePath = path.join(
+      __dirname,
+      '../../20251121recetas_econovision_paraguay.xlsx',
+    );
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -473,7 +511,7 @@ export class PreciosRecetaService {
         contador++;
         const codigoMia = hoja.getCell(1).value;
         const precio = hoja.getCell(10).value;
-        console.log(codigoMia,precio);
+        console.log(codigoMia, precio);
 
         if (contador == 1) {
           continue;
@@ -483,18 +521,15 @@ export class PreciosRecetaService {
           const receta = await this.precioReceta.findOne({
             _id: new Types.ObjectId(codigoMia.toString()),
           });
-         
-          
+
           if (receta) {
-            const resultado=  await this.precioReceta.updateOne(
+            const resultado = await this.precioReceta.updateOne(
               { _id: new Types.ObjectId(codigoMia.toString()) },
               { precio: Number(precio) },
             );
             console.log(resultado);
-            
           }
         }
-        
       }
     }
   }
@@ -857,10 +892,7 @@ export class PreciosRecetaService {
           rangoCodigoNovar: 1,
           codigosMap: 1,
         },
-      },
-      {
-        $limit: 10,
-      },
+      }
     ]);
 
     const url =
@@ -886,7 +918,17 @@ export class PreciosRecetaService {
       }
 
       if (item.marcalenteNombre != 'SIN MARCA') {
-        nombre += ` ${item.marcalenteNombre}`;
+        if (item.marcalenteNombre == 'RODENSTOCK BIG NORM') {
+          nombre += ` RDBG`;
+        }
+        else if (item.marcalenteNombre == 'RODENSTOCK LIFE') {
+          nombre += ` RDDL`;
+        }
+        else if (item.marcalenteNombre == 'RODENSTOCK MYCOM') {
+          nombre += ` RDM`;
+        } else {
+          nombre += ` ${item.marcalenteNombre}`;
+        }
       }
       if (item.tratamientoNombre != 'SIN TRATAMIENTO') {
         nombre += ` ${item.tratamientoNombre}`;
@@ -914,8 +956,7 @@ export class PreciosRecetaService {
         IsFoto: item.isFoto,
         TipoOperacion: 1,
       };
-
-      const response = await firstValueFrom(this.httpService.post(url, data));
+       const response = await firstValueFrom(this.httpService.post(url, data));
       if (response.data.IsOk == false) {
         let nombre = `${item.tipolenteNombre} ${item.materiallenteNombre} ${item.tipocolorlenteNombre} ${item.colorlenteNombre} ${item.marcalenteNombre} ${item.tratamientoNombre}  ${item.rangoNombre}`;
 
@@ -1010,7 +1051,10 @@ export class PreciosRecetaService {
   }
 
   async eliminarpy2() {
-    const data = await this.precioReceta.aggregate<{_id:Types.ObjectId, nombre:string}>([
+    const data = await this.precioReceta.aggregate<{
+      _id: Types.ObjectId;
+      nombre: string;
+    }>([
       {
         $lookup: {
           from: 'Precio',
@@ -1026,11 +1070,11 @@ export class PreciosRecetaService {
         },
       },
       {
-        $project:{
-          _id:1,
-          nombre:'$precios.nombre'
-        }
-      }
+        $project: {
+          _id: 1,
+          nombre: '$precios.nombre',
+        },
+      },
     ]);
     console.log(data);
   }
