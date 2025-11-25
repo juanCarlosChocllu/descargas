@@ -170,7 +170,7 @@ export class PreciosRecetaService {
   }
 
   async crearCombiancion() {
-    const filePath = path.join(__dirname, '../../NoSistEcoPy.xlsx');
+    const filePath = path.join(__dirname, '../../semiprogresivosEcoParaguay.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -194,6 +194,11 @@ export class PreciosRecetaService {
         if (contador == 1) {
           continue;
         }
+         if (!material && !tipoLente && !tipoColor && !tratamiento && !rangos && !marca && !colorLente && !precio && !monto ) {
+          break
+        }
+
+
         const [
           materiales,
           tiposLente,
@@ -257,7 +262,7 @@ export class PreciosRecetaService {
             console.error('existe', data);
           }
         } else {
-          console.table({
+          console.log({
             material: material,
             tipoLente: tipoLente,
             'tipo color': tipoColor,
