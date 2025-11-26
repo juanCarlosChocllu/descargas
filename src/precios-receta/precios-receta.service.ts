@@ -170,7 +170,7 @@ export class PreciosRecetaService {
   }
 
   async crearCombiancion() {
-    const filePath = path.join(__dirname, '../../semiprogresivosEcoParaguay.xlsx');
+    const filePath = path.join(__dirname, '../../semiprogresivoEcoParaguay26112025.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -279,7 +279,7 @@ export class PreciosRecetaService {
   }
 
   async actualizarRangos() {
-    const filePath = path.join(__dirname, '../../rangos_rds.xlsx');
+    const filePath = path.join(__dirname, '../../RD.xlsx');
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
