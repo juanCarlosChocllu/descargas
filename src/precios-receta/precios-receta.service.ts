@@ -748,7 +748,7 @@ export class PreciosRecetaService {
     }>([
       {
         $match: {
-          novar: { $ne: false },
+          novar: { $ne: true },
         },
       },
       {
