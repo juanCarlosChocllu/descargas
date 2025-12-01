@@ -113,6 +113,10 @@ export class MapRecetaNovar {
 
   @Prop()
   novar: boolean;
+
+
+  @Prop()
+  responseNovar:string
 }
 export const MapRecetaNovaraSchema =
   SchemaFactory.createForClass(MapRecetaNovar);

@@ -170,7 +170,10 @@ export class PreciosRecetaService {
   }
 
   async crearCombiancion() {
-    const filePath = path.join(__dirname, '../../semiprogresivoEcoParaguay26112025.xlsx');
+    const filePath = path.join(
+      __dirname,
+      '../../semiprogresivoEcoParaguay26112025.xlsx',
+    );
     const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
       entries: 'emit',
     });
@@ -194,10 +197,19 @@ export class PreciosRecetaService {
         if (contador == 1) {
           continue;
         }
-         if (!material && !tipoLente && !tipoColor && !tratamiento && !rangos && !marca && !colorLente && !precio && !monto ) {
-          break
+        if (
+          !material &&
+          !tipoLente &&
+          !tipoColor &&
+          !tratamiento &&
+          !rangos &&
+          !marca &&
+          !colorLente &&
+          !precio &&
+          !monto
+        ) {
+          break;
         }
-
 
         const [
           materiales,
@@ -680,9 +692,6 @@ export class PreciosRecetaService {
           tratamientoNovar: 1,
         },
       },
-      {
-        $limit: 1,
-      },
     ]);
     for (const item of receta) {
       const data = {
@@ -739,7 +748,7 @@ export class PreciosRecetaService {
     }>([
       {
         $match: {
-          novar: { $ne: true },
+          novar: { $ne: false },
         },
       },
       {
@@ -769,6 +778,17 @@ export class PreciosRecetaService {
         },
       },
       { $unwind: '$rango' },
+      {
+        $match: {
+          'rango.nombre': {
+            $in: [
+              'RD ADD +3.25 A +3.50',
+              'RD ADD +1.00 A +3.00',
+              'RD SUMATORIAS DE ESF. CON CIL. NO DEBE PASAR DE ESF +8.00 O -10.00 HASTA (CIL. -6.00)',
+            ],
+          },
+        },
+      },
       {
         $lookup: {
           from: 'TipoColorLente',
@@ -897,12 +917,14 @@ export class PreciosRecetaService {
           rangoCodigoNovar: 1,
           codigosMap: 1,
         },
-      }
+      },
     ]);
-
+    console.log(receta.length);
+    let contador = 0
     const url =
       'https://opticentrotest.azurewebsites.net/api/servicios/serviciosapi/productoasync';
     for (const item of receta) {
+      contador ++
       const codigoProductoNovar =
         `${item.materialNovar ?? ''}_` +
         `${item.tipolenteNovar ?? ''}_` +
@@ -924,13 +946,11 @@ export class PreciosRecetaService {
 
       if (item.marcalenteNombre != 'SIN MARCA') {
         if (item.marcalenteNombre == 'RODENSTOCK BIG NORM') {
-          nombre += ` RDBG`;
-        }
-        else if (item.marcalenteNombre == 'RODENSTOCK LIFE') {
-          nombre += ` RDDL`;
-        }
-        else if (item.marcalenteNombre == 'RODENSTOCK MYCOM') {
-          nombre += ` RDM`;
+          nombre += ` RDSBG`;
+        } else if (item.marcalenteNombre == 'RODENSTOCK LIFE') {
+          nombre += ` RDSL`;
+        } else if (item.marcalenteNombre == 'RODENSTOCK MYCOM') {
+          nombre += ` RDSM`;
         } else {
           nombre += ` ${item.marcalenteNombre}`;
         }
@@ -941,12 +961,12 @@ export class PreciosRecetaService {
       nombre += ` ${item.rangoNombre}`;
       const data = {
         LoginApi: {
-          Idioma: '',
+          Idioma: 'EsArg',
           Login: '',
           Clave: '',
           ApiKey: '',
         },
-        Codigo: codigoProductoNovar,
+        Codigo: codigoProductoNovar ,
         CodigoErp: item.codigoNovar,
         Nombre: nombre,
         Descripcion: nombre,
@@ -961,10 +981,15 @@ export class PreciosRecetaService {
         IsFoto: item.isFoto,
         TipoOperacion: 1,
       };
-       const response = await firstValueFrom(this.httpService.post(url, data));
+
+      const response = await firstValueFrom(this.httpService.post(url, data));
       if (response.data.IsOk == false) {
         let nombre = `${item.tipolenteNombre} ${item.materiallenteNombre} ${item.tipocolorlenteNombre} ${item.colorlenteNombre} ${item.marcalenteNombre} ${item.tratamientoNombre}  ${item.rangoNombre}`;
-
+       
+        await this.mapRecetaNovar.updateOne(
+          { _id: new Types.ObjectId(item.codigoNovar) },
+          { $set: { novar: false , responseNovar:JSON.stringify([response.data, data])} },
+        );
         console.error(nombre);
         console.error(data);
         console.error(response.data.Mensajes);
