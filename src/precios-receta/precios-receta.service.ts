@@ -13,6 +13,7 @@ import {
   TipoColorLente,
   TipoLente,
   Tratamiento,
+  Lente
 } from './schema/precios-receta.schema';
 import { Model, Types } from 'mongoose';
 import * as xlsx from 'xlsx-populate';
@@ -34,6 +35,19 @@ export interface DatosLente {
   tratamiento: Types.ObjectId;
   precios?: Types.ObjectId;
   precio: number;
+}
+
+interface lenteI {
+
+  materialLentes?: Types.ObjectId;
+
+  tipoLente?: Types.ObjectId;
+
+  tipoColorLente?: Types.ObjectId;
+
+  colorLente?: Types.ObjectId;
+
+  marcaLente?: Types.ObjectId;
 }
 
 @Injectable()
@@ -58,11 +72,15 @@ export class PreciosRecetaService {
     private readonly marcaLenteModel: Model<MarcaLente>,
     @InjectModel(ColorLente.name)
     private readonly colorLenteModel: Model<ColorLente>,
+
     @InjectModel(Precio.name)
     private readonly precioModel: Model<Precio>,
 
+    @InjectModel(Lente.name)
+    private readonly lenteModel: Model<Lente>,
+
     private readonly httpService: HttpService,
-  ) {}
+  ) { }
 
   async create(createPreciosRecetaDto: CreatePreciosRecetaDto) {
     const filePath = path.join(__dirname, '../../recetas_actualizar.xlsx');
@@ -389,13 +407,7 @@ export class PreciosRecetaService {
         },
       },
       { $unwind: '$marcalente' },
-      {
-        $match: {
-          'marcalente.nombre': {
-            $in: ['RODENSTOCK BIG NORM', 'RODENSTOCK LIFE', 'RODENSTOCK MYCOM'],
-          },
-        },
-      },
+
       {
         $lookup: {
           from: 'Tratamiento',
@@ -414,11 +426,11 @@ export class PreciosRecetaService {
         },
       },
       { $unwind: '$precios' },
-      /* {
+      {
         $match: {
-          'precios.nombre': { $in: ['ECOPY-1', 'ECOPY-2'] },
+          'precios.nombre': { $in: ['ECOPY-1', 'ECOPY-2', 'ECO 1', 'ECO 2'] },
         },
-      },*/
+      },
       /* {
         $group:{
           _id:{
@@ -510,7 +522,7 @@ export class PreciosRecetaService {
         }   
       }*/
     }
-    await x.toFileAsync('./recetas_econovision_paraguay.xlsx');
+    await x.toFileAsync('./PRECIOSECO1ECO2PARAGUAY.xlsx');
     return precio;
   }
   async actualizarPrecios() {
@@ -746,11 +758,7 @@ export class PreciosRecetaService {
       rangoCodigoNovar: string;
       codigosMap: Types.ObjectId[];
     }>([
-      {
-        $match: {
-          novar: { $ne: true },
-        },
-      },
+
       {
         $lookup: {
           from: 'MaterialLentes',
@@ -922,9 +930,9 @@ export class PreciosRecetaService {
     console.log(receta.length);
     let contador = 0
     const url =
-      'https://opticentrotest.azurewebsites.net/api/servicios/serviciosapi/productoasync';
+      '';
     for (const item of receta) {
-      contador ++
+      contador++
       const codigoProductoNovar =
         `${item.materialNovar ?? ''}_` +
         `${item.tipolenteNovar ?? ''}_` +
@@ -961,12 +969,12 @@ export class PreciosRecetaService {
       nombre += ` ${item.rangoNombre}`;
       const data = {
         LoginApi: {
-          Idioma: 'EsArg',
+          Idioma: '',
           Login: '',
           Clave: '',
           ApiKey: '',
         },
-        Codigo: codigoProductoNovar ,
+        Codigo: codigoProductoNovar,
         CodigoErp: item.codigoNovar,
         Nombre: nombre,
         Descripcion: nombre,
@@ -985,10 +993,10 @@ export class PreciosRecetaService {
       const response = await firstValueFrom(this.httpService.post(url, data));
       if (response.data.IsOk == false) {
         let nombre = `${item.tipolenteNombre} ${item.materiallenteNombre} ${item.tipocolorlenteNombre} ${item.colorlenteNombre} ${item.marcalenteNombre} ${item.tratamientoNombre}  ${item.rangoNombre}`;
-       
+
         await this.mapRecetaNovar.updateOne(
           { _id: new Types.ObjectId(item.codigoNovar) },
-          { $set: { novar: false , responseNovar:JSON.stringify([response.data, data])} },
+          { $set: { novar: false, responseNovar: JSON.stringify([response.data, data]) } },
         );
         console.error(nombre);
         console.error(data);
@@ -1108,4 +1116,263 @@ export class PreciosRecetaService {
     ]);
     console.log(data);
   }
+
+  async descargarLente() {
+    const lentes = await this.lenteModel.aggregate([
+      {
+        $match: {
+          flag: 'nuevo',
+          tipo:'TERMINADO',
+          tipoLente:new Types.ObjectId("5af4d8f10d41b4a9d1116862"),
+          materialLentes:new Types.ObjectId("5af4d81b0d41b4a9d11167a4"),
+          colorLente:{$in:[new Types.ObjectId("5f4d4d421c1a1a1e1b043842"), new Types.ObjectId("65f35b1b9a4260939f0c1812")]}
+        }
+      },
+
+      {
+        $lookup: {
+          from: 'MaterialLentes',
+          foreignField: '_id',
+          localField: 'materialLentes',
+          as: 'materialLentes',
+        },
+      },
+      {
+        $unwind: { path: '$materialLentes', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $lookup: {
+          from: 'TipoLente',
+          foreignField: '_id',
+          localField: 'tipoLente',
+          as: 'tipoLente',
+        },
+      },
+      {
+        $unwind: { path: '$tipoLente', preserveNullAndEmptyArrays: true }
+      },
+
+      {
+        $lookup: {
+          from: 'TipoColorLente',
+          foreignField: '_id',
+          localField: 'tipoColorLente',
+          as: 'tipoColorLente',
+        },
+      },
+      {
+        $unwind: { path: '$tipoColorLente', preserveNullAndEmptyArrays: true }
+      },
+
+      {
+        $lookup: {
+          from: 'ColorLente',
+          foreignField: '_id',
+          localField: 'colorLente',
+          as: 'colorLente',
+        },
+      },
+      {
+        $unwind: { path: '$colorLente', preserveNullAndEmptyArrays: true }
+      },
+
+      {
+        $lookup: {
+          from: 'MarcaLente',
+          foreignField: '_id',
+          localField: 'marcaLente',
+          as: 'marcaLente',
+        },
+      },
+      {
+        $unwind: { path: '$marcaLente', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $project: {
+          _id: 1,
+          codigo: 1,
+          material: '$materialLentes.nombre',
+          tipoLente: '$tipoLente.nombre',
+          tipoColor: '$tipoColorLente.nombre',
+          marca: '$marcaLente.nombre',
+          color: '$colorLente.nombre',
+        },
+      },
+
+
+    ])
+    console.log(lentes[0]._id);
+
+    const x = await xlsx.fromBlankAsync();
+    x.sheet(0).cell(`A1`).value('id');
+    x.sheet(0).cell(`B1`).value('codigo');
+    x.sheet(0).cell(`C1`).value('material');
+    x.sheet(0).cell(`D1`).value('tipo lente');
+    x.sheet(0).cell(`E1`).value('tipo color');
+    x.sheet(0).cell(`F1`).value('marca');
+    x.sheet(0).cell(`G1`).value('color');
+
+
+    for (let index = 0; index < lentes.length; index++) {
+      x.sheet(0)
+        .cell(`A${index + 2}`)
+        .value(String(lentes[index]._id));
+      x.sheet(0)
+        .cell(`B${index + 2}`)
+        .value(lentes[index].codigo);
+      x.sheet(0)
+        .cell(`C${index + 2}`)
+        .value(lentes[index].material);
+      x.sheet(0)
+        .cell(`D${index + 2}`)
+        .value(lentes[index].tipoLente);
+      x.sheet(0)
+        .cell(`E${index + 2}`)
+        .value(lentes[index].tipoColor);
+
+      x.sheet(0)
+        .cell(`F${index + 2}`)
+        .value(lentes[index].marca);
+      x.sheet(0)
+        .cell(`G${index + 2}`)
+        .value(lentes[index].color);
+
+
+    }
+    await x.toFileAsync('./lente.xlsx');
+  }
+
+
+  async reorganizarLente() {
+    const filePath = path.join(
+      __dirname,
+      '../../lente.xlsx',
+    );
+    const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
+      entries: 'emit',
+    });
+
+    let contador = 0;
+    for await (const hojas of workbook) {
+      for await (const hoja of hojas) {
+        contador++;
+        const id = hoja.getCell(1).value;
+        const codigo = hoja.getCell(2).value;
+        const material = hoja.getCell(3).value;
+        const tipoLente = hoja.getCell(4).value;
+        const tipoColor = hoja.getCell(5).value;
+        let marca = hoja.getCell(6).value;
+        let color = hoja.getCell(7).value;
+
+        if (contador == 1) {
+          continue;
+        }
+        if (!marca) {
+          marca = 'SIN MARCA'
+        }
+        if (!color) {
+          color = 'SIN COLOR'
+        }
+
+        const [
+          materiales,
+          tiposLente,
+          tipoColorLente,
+          marcas,
+          colorL
+
+        ] = await Promise.all([
+          this.materialLentesModel.find({ nombre: material }),
+          this.tipoLenteModel.find({ nombre: tipoLente }),
+          this.tipoColorLenteModel.find({ nombre: tipoColor }),
+          this.marcaLenteModel.find({ nombre: marca }),
+          this.colorLenteModel.find({ nombre: color })
+
+        ]);
+
+
+        const data: lenteI = {}
+        if (materiales.length > 1) {
+          const m = materiales.filter((item) => item.flag === 'nuevo')
+          if (m.length > 0) {
+            data.materialLentes = m[0]._id
+          }
+        }
+
+
+
+        if (tiposLente.length > 1) {
+          const m = tiposLente.filter((item) => item.flag === 'nuevo')
+          if (m.length > 0) {
+            data.tipoLente = m[0]._id
+          }
+        }
+
+        if (tipoColorLente.length > 1) {
+          const m = tipoColorLente.filter((item) => item.flag === 'nuevo')
+          if (m.length > 0) {
+            data.tipoColorLente = m[0]._id
+          }
+        }
+        if (marcas.length > 1) {
+          const m = marcas.filter((item) => item.flag === 'nuevo')
+          if (m.length > 0) {
+            data.marcaLente = m[0]._id
+          }
+        }
+        
+        if (colorL.length > 1) {
+          const m = colorL.filter((item) => item.flag === 'nuevo')
+          if (m.length > 0) {
+            data.colorLente = m[0]._id
+          }
+        }
+
+        if (Object.keys(data).length > 0) {
+          console.log(data);
+          const r = await this.lenteModel.updateOne(
+            { _id: new Types.ObjectId(String(id)) },
+            { $set: data }
+          );
+          console.log(r);
+        }
+        /*   if ( data && data.materialLentes){
+            const r = await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{materialLentes:data.materialLentes}})
+           console.log('materialLentes', r);
+           
+           }
+   
+           if ( data && data.tipoLente){
+            const r= await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{tipoLente:data.tipoLente}})
+                 console.log('tipoLente', r);
+           }
+           
+            if ( data && data.tipoColorLente){
+             const r=  await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{tipoColorLente:data.tipoColorLente}})
+                   console.log('tipoColorLente', r);
+           }
+          
+             if ( data && data.marcaLente){
+             const r=  await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{marcaLente:data.marcaLente}})
+                console.log('marcaLente', r);
+           }
+           
+           if ( data && data.colorLente){
+             console.log({_id:new Types.ObjectId(String(id))},  {$set:{colorLente:data.colorLente}});
+             
+               const r= await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{colorLente:data.colorLente}})
+               console.log('colorLente', r);
+             }*/
+
+
+
+
+      }
+
+
+
+    }
+  }
 }
+
+

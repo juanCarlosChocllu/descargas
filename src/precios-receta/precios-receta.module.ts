@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   ColorLente,
   ColorLenteSchema,
+  LenteSchema,
   MapRecetaNovar,
   MapRecetaNovaraSchema,
   MarcaLente,
@@ -21,6 +22,7 @@ import {
   TipoLenteSchema,
   Tratamiento,
   tratamientoSchema,
+  Lente
 } from './schema/precios-receta.schema';
 import { Precio } from 'src/schema';
 import { precioSchema } from 'src/productos/schema/producto.schema';
@@ -41,6 +43,7 @@ import { HttpModule } from '@nestjs/axios';
       { name: ColorLente.name, schema: ColorLenteSchema },
       { name: Precio.name, schema: precioSchema },
       { name: MapRecetaNovar.name, schema: MapRecetaNovaraSchema },
+        { name: Lente.name, schema: LenteSchema },
     ]),
   ],
   controllers: [PreciosRecetaController],

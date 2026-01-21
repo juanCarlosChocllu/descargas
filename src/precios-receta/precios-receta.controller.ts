@@ -58,4 +58,13 @@ export class PreciosRecetaController {
   actualizarRangos() {
     return this.preciosRecetaService.actualizarRangos();
   }
+
+    @Get('descargar/lente')
+  descargarLente() {
+    return this.preciosRecetaService.descargarLente();
+  }
+   @Get('lente/organizar')
+  reorganizarLente() {
+    return this.preciosRecetaService.reorganizarLente();
+  }
 }

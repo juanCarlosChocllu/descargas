@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Cliente, ClienteSchema, Lente, LentesSchema, Precio, PrecioSchema, Producto, ProductoSchema, SalidadLente, SalidadLenteSchema, Stock, StockSchema, Sucursal, sucursalSchema, TotalStock, TotalStockSchema, UbicacionTrabajo, UbicacionTrabajoSchema, Users, userSchema, Venta, VentaSchema } from './schema';
+import { Cliente, ClienteSchema, Precio, PrecioSchema, Producto, ProductoSchema, SalidadLente, SalidadLenteSchema, Stock, StockSchema, Sucursal, sucursalSchema, TotalStock, TotalStockSchema, UbicacionTrabajo, UbicacionTrabajoSchema, Users, userSchema, Venta, VentaSchema } from './schema';
 import { UserService } from './user.service';
 import { ClienteService } from './cliente.service';
 import { ProductosService } from './productos.service';
@@ -13,9 +13,9 @@ import { ProductosModule } from './productos/productos.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://kanna:kanna@localhost:27017/11-11-2025?authSource=admin'),
+    MongooseModule.forRoot('mongodb://kanna:kanna@localhost:27017/oc12122025?authSource=admin'),
     MongooseModule.forFeature([
-      {name:Lente.name, schema:LentesSchema},
+     /* {name:Lente.name, schema:LentesSchema}*/,
       {name:Stock.name, schema:StockSchema},
       {name:TotalStock.name, schema:TotalStockSchema},
       {name:Venta.name, schema:VentaSchema},

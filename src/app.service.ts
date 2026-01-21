@@ -10,7 +10,7 @@ import { log } from 'console';
 @Injectable()
 export class AppService {
 
-  constructor(
+ /* constructor(
     @InjectModel(Lente.name)private readonly LenteSchema:Model<Lente>,
     @InjectModel(Stock.name) private readonly StockSchema:Model<Stock>,
     @InjectModel(TotalStock.name) private  TotalSchema:Model<TotalStock>,
@@ -224,7 +224,7 @@ export class AppService {
       lenteConStock.idStock.slice(1).map(async (item)=> await this.StockSchema.findByIdAndUpdate(item,{flag:flag.eliminado}) )
       
     }
-  } 
+  } */
 
 }
 

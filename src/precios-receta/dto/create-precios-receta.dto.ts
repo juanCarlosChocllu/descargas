@@ -1,1 +1,2 @@
-export class CreatePreciosRecetaDto {}
+export class CreatePreciosRecetaDto {
+}

@@ -13,7 +13,7 @@ export class AppController {
     private readonly productosService: ProductosService
   ) {}
 
-  @Get('lente')
+ /*@Get('lente')
   Lente() {
     return this.appService.Lente();
   }
@@ -26,7 +26,7 @@ export class AppController {
   @Get('grupo')
   async LenteGrupo(){
      return await  this.appService.lenteAgrupado()
-  }
+  }*/
 
   @Get('user/decargar/excel')
   async descargaUser(){
