@@ -1122,10 +1122,10 @@ export class PreciosRecetaService {
       {
         $match: {
           flag: 'nuevo',
-          tipo:'TERMINADO',
-          tipoLente:new Types.ObjectId("5af4d8f10d41b4a9d1116862"),
-          materialLentes:new Types.ObjectId("5af4d81b0d41b4a9d11167a4"),
-          colorLente:{$in:[new Types.ObjectId("5f4d4d421c1a1a1e1b043842"), new Types.ObjectId("65f35b1b9a4260939f0c1812")]}
+          tipo: 'TERMINADO',
+          tipoLente: new Types.ObjectId("5af4d8f10d41b4a9d1116862"),
+          materialLentes: new Types.ObjectId("5af4d81b0d41b4a9d11167a4"),
+          colorLente: { $in: [new Types.ObjectId("5f4d4d421c1a1a1e1b043842"), new Types.ObjectId("65f35b1b9a4260939f0c1812")] }
         }
       },
 
@@ -1319,12 +1319,22 @@ export class PreciosRecetaService {
           if (m.length > 0) {
             data.marcaLente = m[0]._id
           }
+        } else if (marca === 'SIN MARCA') {
+          const d = await this.marcaLenteModel.findOne({ nombre: marca })
+          if (d) {
+            data.marcaLente = d._id
+          }
         }
-        
+
         if (colorL.length > 1) {
           const m = colorL.filter((item) => item.flag === 'nuevo')
           if (m.length > 0) {
             data.colorLente = m[0]._id
+          }
+        } else if (color === 'SIN COLOR') {
+          const d = await this.colorLenteModel.findOne({ nombre: color })
+          if (d) {
+            data.colorLente = d._id
           }
         }
 
