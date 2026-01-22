@@ -1122,10 +1122,6 @@ export class PreciosRecetaService {
       {
         $match: {
           flag: 'nuevo',
-          tipo: 'TERMINADO',
-          tipoLente: new Types.ObjectId("5af4d8f10d41b4a9d1116862"),
-          materialLentes: new Types.ObjectId("5af4d81b0d41b4a9d11167a4"),
-          colorLente: { $in: [new Types.ObjectId("5f4d4d421c1a1a1e1b043842"), new Types.ObjectId("65f35b1b9a4260939f0c1812")] }
         }
       },
 
