@@ -24,6 +24,7 @@ import { Precio } from 'src/schema';
 import { flag } from 'src/enum';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { log } from 'console';
 
 export interface DatosLente {
   materiallente: Types.ObjectId;
@@ -1184,54 +1185,85 @@ export class PreciosRecetaService {
         $unwind: { path: '$marcaLente', preserveNullAndEmptyArrays: true }
       },
       {
+        $lookup: {
+          from: 'Fabricante',
+          foreignField: '_id',
+          localField: 'fabricante',
+          as: 'fabricante',
+        },
+      },
+
+
+      /* {
+         $lookup: {
+           from: 'Stock',
+           foreignField: 'lente',
+           localField: '_id',
+           as: 'stock',
+         },
+       },
+       {
+         $unwind: { path: '$stock', preserveNullAndEmptyArrays: true }
+       },*/
+      
+      {
         $project: {
           _id: 1,
           codigo: 1,
+          tipo: 1,
+          ojo: 1,
+          base: 1,
+          cilindro: 1,
+          esferico: 1,
+          adicion: 1,
+          fabricante: { $arrayElemAt: ['$fabricante.nombre', 0] },
           material: '$materialLentes.nombre',
           tipoLente: '$tipoLente.nombre',
           tipoColor: '$tipoColorLente.nombre',
           marca: '$marcaLente.nombre',
           color: '$colorLente.nombre',
+          // cantidad: '$stock.cantidad'
         },
-      },
-
-
+      }
     ])
-    console.log(lentes[0]._id);
+    console.log(lentes);
 
     const x = await xlsx.fromBlankAsync();
-    x.sheet(0).cell(`A1`).value('id');
-    x.sheet(0).cell(`B1`).value('codigo');
-    x.sheet(0).cell(`C1`).value('material');
-    x.sheet(0).cell(`D1`).value('tipo lente');
-    x.sheet(0).cell(`E1`).value('tipo color');
-    x.sheet(0).cell(`F1`).value('marca');
-    x.sheet(0).cell(`G1`).value('color');
+   x.sheet(0).cell('A1').value('id');
+x.sheet(0).cell('B1').value('codigo');
+x.sheet(0).cell('C1').value('tipo');
+x.sheet(0).cell('D1').value('cilindro');
+x.sheet(0).cell('E1').value('esferico');
+x.sheet(0).cell('F1').value('adicion');
+x.sheet(0).cell('G1').value('base');
+x.sheet(0).cell('H1').value('ojo');
+x.sheet(0).cell('I1').value('fabricante');
+x.sheet(0).cell('J1').value('material');
+x.sheet(0).cell('K1').value('tipo lente');
+x.sheet(0).cell('L1').value('tipo color');
+x.sheet(0).cell('M1').value('marca');
+x.sheet(0).cell('N1').value('color');
 
 
-    for (let index = 0; index < lentes.length; index++) {
-      x.sheet(0)
-        .cell(`A${index + 2}`)
-        .value(String(lentes[index]._id));
-      x.sheet(0)
-        .cell(`B${index + 2}`)
-        .value(lentes[index].codigo);
-      x.sheet(0)
-        .cell(`C${index + 2}`)
-        .value(lentes[index].material);
-      x.sheet(0)
-        .cell(`D${index + 2}`)
-        .value(lentes[index].tipoLente);
-      x.sheet(0)
-        .cell(`E${index + 2}`)
-        .value(lentes[index].tipoColor);
 
-      x.sheet(0)
-        .cell(`F${index + 2}`)
-        .value(lentes[index].marca);
-      x.sheet(0)
-        .cell(`G${index + 2}`)
-        .value(lentes[index].color);
+    for (let i = 0; i < lentes.length; i++) {
+      const fila = i + 2;
+
+      x.sheet(0).cell(`A${fila}`).value(String(lentes[i]._id));
+    x.sheet(0).cell(`B${fila}`).value(lentes[i].codigo);
+    x.sheet(0).cell(`C${fila}`).value(lentes[i].tipo);
+    x.sheet(0).cell(`D${fila}`).value(lentes[i].cilindro);
+    x.sheet(0).cell(`E${fila}`).value(lentes[i].esferico);
+    x.sheet(0).cell(`F${fila}`).value(lentes[i].adicion);
+    x.sheet(0).cell(`G${fila}`).value(lentes[i].base);
+    x.sheet(0).cell(`H${fila}`).value(lentes[i].ojo);
+    x.sheet(0).cell(`I${fila}`).value(lentes[i].fabricante);
+    x.sheet(0).cell(`J${fila}`).value(lentes[i].material);
+    x.sheet(0).cell(`K${fila}`).value(lentes[i].tipoLente);
+    x.sheet(0).cell(`L${fila}`).value(lentes[i].tipoColor);
+    x.sheet(0).cell(`M${fila}`).value(lentes[i].marca);
+    x.sheet(0).cell(`N${fila}`).value(lentes[i].color);;
+
 
 
     }
@@ -1259,17 +1291,9 @@ export class PreciosRecetaService {
         const tipoColor = hoja.getCell(5).value;
         let marca = hoja.getCell(6).value;
         let color = hoja.getCell(7).value;
-
         if (contador == 1) {
           continue;
         }
-        if (!marca) {
-          marca = 'SIN MARCA'
-        }
-        if (!color) {
-          color = 'SIN COLOR'
-        }
-
         const [
           materiales,
           tiposLente,
@@ -1278,17 +1302,23 @@ export class PreciosRecetaService {
           colorL
 
         ] = await Promise.all([
+
           this.materialLentesModel.find({ nombre: material }),
+
           this.tipoLenteModel.find({ nombre: tipoLente }),
+
           this.tipoColorLenteModel.find({ nombre: tipoColor }),
+
           this.marcaLenteModel.find({ nombre: marca }),
+
           this.colorLenteModel.find({ nombre: color })
 
         ]);
 
 
         const data: lenteI = {}
-        if (materiales.length > 1) {
+
+        if (materiales.length > 0) {
           const m = materiales.filter((item) => item.flag === 'nuevo')
           if (m.length > 0) {
             data.materialLentes = m[0]._id
@@ -1297,80 +1327,43 @@ export class PreciosRecetaService {
 
 
 
-        if (tiposLente.length > 1) {
+        if (tiposLente.length > 0) {
           const m = tiposLente.filter((item) => item.flag === 'nuevo')
           if (m.length > 0) {
             data.tipoLente = m[0]._id
           }
         }
 
-        if (tipoColorLente.length > 1) {
+        if (tipoColorLente.length > 0) {
           const m = tipoColorLente.filter((item) => item.flag === 'nuevo')
           if (m.length > 0) {
             data.tipoColorLente = m[0]._id
           }
         }
-        if (marcas.length > 1) {
+
+        if (marcas.length > 0) {
           const m = marcas.filter((item) => item.flag === 'nuevo')
           if (m.length > 0) {
             data.marcaLente = m[0]._id
           }
-        } else if (marca === 'SIN MARCA') {
-          const d = await this.marcaLenteModel.findOne({ nombre: marca })
-          if (d) {
-            data.marcaLente = d._id
-          }
         }
 
-        if (colorL.length > 1) {
+        if (colorL.length > 0) {
           const m = colorL.filter((item) => item.flag === 'nuevo')
           if (m.length > 0) {
             data.colorLente = m[0]._id
           }
-        } else if (color === 'SIN COLOR') {
-          const d = await this.colorLenteModel.findOne({ nombre: color })
-          if (d) {
-            data.colorLente = d._id
-          }
         }
 
+        console.log(codigo);
+        console.log(data);
         if (Object.keys(data).length > 0) {
-          console.log(data);
           const r = await this.lenteModel.updateOne(
             { _id: new Types.ObjectId(String(id)) },
             { $set: data }
           );
           console.log(r);
         }
-        /*   if ( data && data.materialLentes){
-            const r = await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{materialLentes:data.materialLentes}})
-           console.log('materialLentes', r);
-           
-           }
-   
-           if ( data && data.tipoLente){
-            const r= await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{tipoLente:data.tipoLente}})
-                 console.log('tipoLente', r);
-           }
-           
-            if ( data && data.tipoColorLente){
-             const r=  await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{tipoColorLente:data.tipoColorLente}})
-                   console.log('tipoColorLente', r);
-           }
-          
-             if ( data && data.marcaLente){
-             const r=  await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{marcaLente:data.marcaLente}})
-                console.log('marcaLente', r);
-           }
-           
-           if ( data && data.colorLente){
-             console.log({_id:new Types.ObjectId(String(id))},  {$set:{colorLente:data.colorLente}});
-             
-               const r= await this.lente.updateOne({_id:new Types.ObjectId(String(id))},  {$set:{colorLente:data.colorLente}})
-               console.log('colorLente', r);
-             }*/
-
-
 
 
       }
