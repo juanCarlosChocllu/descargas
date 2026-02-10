@@ -63,8 +63,57 @@ export class PreciosRecetaController {
   descargarLente() {
     return this.preciosRecetaService.descargarLente();
   }
-   @Get('lente/organizar')
+  
+  @Get('descargar/combinacion')
+  descargarLente2() {
+    return this.preciosRecetaService.descargarLente2();
+  }
+
+  @Get('lente/organizar')
   reorganizarLente() {
     return this.preciosRecetaService.reorganizarLente();
   }
+
+  
+  @Get('tipoLente')
+  tipoLente() {
+    return this.preciosRecetaService.tipoLente();
+  }
+  @Get('material')
+  material() {
+    return this.preciosRecetaService.material();
+  }
+  @Get('tipoColor')
+  tipoColor() {
+    return this.preciosRecetaService.tipoColor();
+  }
+  @Get('color')
+  color() {
+    return this.preciosRecetaService.color();
+  }
+
+
+    @Get('tipoLente/cargar')
+  tipoLentecargar() {
+    return this.preciosRecetaService.tipoLenteCargar();
+  }
+  @Get('material/cargar')
+  materialcargar() {
+    return this.preciosRecetaService.materialCargar();
+  }
+  @Get('tipoColor/cargar')
+  tipoColorcargar() {
+    return this.preciosRecetaService.tipoColorCargar();
+  }
+  @Get('color/cargar')
+  colorcargar() {
+    return this.preciosRecetaService.colorCargar();
+  }
+
+  @Get('combinacionesLente/cargar')
+  combinacionesLente() {
+    return this.preciosRecetaService.combinacionesLente();
+  }
+
+
 }

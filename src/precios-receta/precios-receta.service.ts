@@ -13,7 +13,8 @@ import {
   TipoColorLente,
   TipoLente,
   Tratamiento,
-  Lente
+  Lente,
+  LenteCombinacion
 } from './schema/precios-receta.schema';
 import { Model, Types } from 'mongoose';
 import * as xlsx from 'xlsx-populate';
@@ -25,6 +26,8 @@ import { flag } from 'src/enum';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { log } from 'console';
+import { types } from 'util';
+import { escape } from 'querystring';
 
 export interface DatosLente {
   materiallente: Types.ObjectId;
@@ -39,7 +42,7 @@ export interface DatosLente {
 }
 
 interface lenteI {
-
+  tipo: string
   materialLentes?: Types.ObjectId;
 
   tipoLente?: Types.ObjectId;
@@ -49,6 +52,21 @@ interface lenteI {
   colorLente?: Types.ObjectId;
 
   marcaLente?: Types.ObjectId;
+
+  flag?: string
+}
+
+interface lenteI2 {
+  tipo: string
+  material?: Types.ObjectId;
+
+  tipoLente?: Types.ObjectId;
+
+  tipoColorLente?: Types.ObjectId;
+
+  color?: Types.ObjectId;
+
+  flag?: string
 }
 
 @Injectable()
@@ -79,6 +97,9 @@ export class PreciosRecetaService {
 
     @InjectModel(Lente.name)
     private readonly lenteModel: Model<Lente>,
+
+    @InjectModel(LenteCombinacion.name)
+    private readonly lenteCombinacion: Model<LenteCombinacion>,
 
     private readonly httpService: HttpService,
   ) { }
@@ -1123,6 +1144,9 @@ export class PreciosRecetaService {
       {
         $match: {
           flag: 'nuevo',
+          tipo: "TERMINADO",
+          tipoLente: new Types.ObjectId("5af4d8f10d41b4a9d1116862"),
+          materialLentes: new Types.ObjectId("5af4d81b0d41b4a9d11167a6")
         }
       },
 
@@ -1205,7 +1229,7 @@ export class PreciosRecetaService {
        {
          $unwind: { path: '$stock', preserveNullAndEmptyArrays: true }
        },*/
-      
+
       {
         $project: {
           _id: 1,
@@ -1229,20 +1253,20 @@ export class PreciosRecetaService {
     console.log(lentes);
 
     const x = await xlsx.fromBlankAsync();
-   x.sheet(0).cell('A1').value('id');
-x.sheet(0).cell('B1').value('codigo');
-x.sheet(0).cell('C1').value('tipo');
-x.sheet(0).cell('D1').value('cilindro');
-x.sheet(0).cell('E1').value('esferico');
-x.sheet(0).cell('F1').value('adicion');
-x.sheet(0).cell('G1').value('base');
-x.sheet(0).cell('H1').value('ojo');
-x.sheet(0).cell('I1').value('fabricante');
-x.sheet(0).cell('J1').value('material');
-x.sheet(0).cell('K1').value('tipo lente');
-x.sheet(0).cell('L1').value('tipo color');
-x.sheet(0).cell('M1').value('marca');
-x.sheet(0).cell('N1').value('color');
+    x.sheet(0).cell('A1').value('id');
+    x.sheet(0).cell('B1').value('codigo');
+    x.sheet(0).cell('C1').value('tipo');
+    x.sheet(0).cell('D1').value('cilindro');
+    x.sheet(0).cell('E1').value('esferico');
+    x.sheet(0).cell('F1').value('adicion');
+    x.sheet(0).cell('G1').value('base');
+    x.sheet(0).cell('H1').value('ojo');
+    x.sheet(0).cell('I1').value('fabricante');
+    x.sheet(0).cell('J1').value('material');
+    x.sheet(0).cell('K1').value('tipo lente');
+    x.sheet(0).cell('L1').value('tipo color');
+    x.sheet(0).cell('M1').value('marca');
+    x.sheet(0).cell('N1').value('color');
 
 
 
@@ -1250,19 +1274,19 @@ x.sheet(0).cell('N1').value('color');
       const fila = i + 2;
 
       x.sheet(0).cell(`A${fila}`).value(String(lentes[i]._id));
-    x.sheet(0).cell(`B${fila}`).value(lentes[i].codigo);
-    x.sheet(0).cell(`C${fila}`).value(lentes[i].tipo);
-    x.sheet(0).cell(`D${fila}`).value(lentes[i].cilindro);
-    x.sheet(0).cell(`E${fila}`).value(lentes[i].esferico);
-    x.sheet(0).cell(`F${fila}`).value(lentes[i].adicion);
-    x.sheet(0).cell(`G${fila}`).value(lentes[i].base);
-    x.sheet(0).cell(`H${fila}`).value(lentes[i].ojo);
-    x.sheet(0).cell(`I${fila}`).value(lentes[i].fabricante);
-    x.sheet(0).cell(`J${fila}`).value(lentes[i].material);
-    x.sheet(0).cell(`K${fila}`).value(lentes[i].tipoLente);
-    x.sheet(0).cell(`L${fila}`).value(lentes[i].tipoColor);
-    x.sheet(0).cell(`M${fila}`).value(lentes[i].marca);
-    x.sheet(0).cell(`N${fila}`).value(lentes[i].color);;
+      x.sheet(0).cell(`B${fila}`).value(lentes[i].codigo);
+      x.sheet(0).cell(`C${fila}`).value(lentes[i].tipo);
+      x.sheet(0).cell(`D${fila}`).value(lentes[i].cilindro);
+      x.sheet(0).cell(`E${fila}`).value(lentes[i].esferico);
+      x.sheet(0).cell(`F${fila}`).value(lentes[i].adicion);
+      x.sheet(0).cell(`G${fila}`).value(lentes[i].base);
+      x.sheet(0).cell(`H${fila}`).value(lentes[i].ojo);
+      x.sheet(0).cell(`I${fila}`).value(lentes[i].fabricante);
+      x.sheet(0).cell(`J${fila}`).value(lentes[i].material);
+      x.sheet(0).cell(`K${fila}`).value(lentes[i].tipoLente);
+      x.sheet(0).cell(`L${fila}`).value(lentes[i].tipoColor);
+      x.sheet(0).cell(`M${fila}`).value(lentes[i].marca);
+      x.sheet(0).cell(`N${fila}`).value(lentes[i].color);;
 
 
 
@@ -1286,12 +1310,19 @@ x.sheet(0).cell('N1').value('color');
         contador++;
         const id = hoja.getCell(1).value;
         const codigo = hoja.getCell(2).value;
-        const material = hoja.getCell(3).value;
-        const tipoLente = hoja.getCell(4).value;
-        const tipoColor = hoja.getCell(5).value;
-        let marca = hoja.getCell(6).value;
-        let color = hoja.getCell(7).value;
+        const tipo = hoja.getCell(3).value;
+        const material = hoja.getCell(10).value;
+        const tipoLente = hoja.getCell(11).value;
+        const tipoColor = hoja.getCell(12).value;
+        let marca = hoja.getCell(13).value;
+        let color = hoja.getCell(14).value;
+
+
         if (contador == 1) {
+          continue;
+        }
+        if (!id) {
+          console.warn(`Fila ${contador} tiene id vacío, se omite`);
           continue;
         }
         const [
@@ -1303,29 +1334,37 @@ x.sheet(0).cell('N1').value('color');
 
         ] = await Promise.all([
 
-          this.materialLentesModel.find({ nombre: material }),
+          this.materialLentesModel.find({ nombre: String(material).trim() }),
 
-          this.tipoLenteModel.find({ nombre: tipoLente }),
+          this.tipoLenteModel.find({ nombre: String(tipoLente).trim() }),
 
-          this.tipoColorLenteModel.find({ nombre: tipoColor }),
+          this.tipoColorLenteModel.find({ nombre: String(tipoColor).trim() }),
 
-          this.marcaLenteModel.find({ nombre: marca }),
+          this.marcaLenteModel.find({ nombre: String(marca).trim() }),
 
-          this.colorLenteModel.find({ nombre: color })
+          this.colorLenteModel.find({ nombre: String(color).trim() })
 
         ]);
 
 
-        const data: lenteI = {}
+
+        const data: lenteI = {
+          tipo: String(tipo).trim(),
+        }
 
         if (materiales.length > 0) {
           const m = materiales.filter((item) => item.flag === 'nuevo')
           if (m.length > 0) {
             data.materialLentes = m[0]._id
+          } else {
+            if (material == '1.6 ULTRAVEX') {
+              const m = materiales.filter((item) => item.nombre === '1.6 ULTRAVEX')
+              if (m.length > 0) {
+                data.materialLentes = m[0]._id
+              }
+            }
           }
         }
-
-
 
         if (tiposLente.length > 0) {
           const m = tiposLente.filter((item) => item.flag === 'nuevo')
@@ -1355,23 +1394,354 @@ x.sheet(0).cell('N1').value('color');
           }
         }
 
-        console.log(codigo);
-        console.log(data);
+
+        console.log(contador, id, ' ', codigo);
+
         if (Object.keys(data).length > 0) {
           const r = await this.lenteModel.updateOne(
             { _id: new Types.ObjectId(String(id)) },
             { $set: data }
           );
-          console.log(r);
+          if (r.modifiedCount > 0) {
+            console.log(r);
+          }
+
         }
-
-
       }
 
 
 
     }
   }
-}
 
+  async tipoLente() {
+    const data = await this.tipoLenteModel.find({ flag: 'nuevo' })
+    const x = await xlsx.fromBlankAsync();
+    x.sheet(0).cell('A1').value('id');
+    x.sheet(0).cell('B1').value('nombre');
+
+    for (let i = 0; i < data.length; i++) {
+      const fila = i + 2;
+      x.sheet(0).cell(`A${fila}`).value(String(data[i]._id));
+      x.sheet(0).cell(`B${fila}`).value(data[i].nombre);
+    }
+    await x.toFileAsync('./tipoLente.xlsx');
+  }
+
+  async material() {
+    const data = await this.materialLentesModel.find({ flag: 'nuevo' })
+    const x = await xlsx.fromBlankAsync();
+    x.sheet(0).cell('A1').value('id');
+    x.sheet(0).cell('B1').value('nombre');
+
+    for (let i = 0; i < data.length; i++) {
+      const fila = i + 2;
+      x.sheet(0).cell(`A${fila}`).value(String(data[i]._id));
+      x.sheet(0).cell(`B${fila}`).value(data[i].nombre);
+    }
+    await x.toFileAsync('./material.xlsx');
+
+  }
+  async tipoColor() {
+    const data = await this.tipoColorLenteModel.find({ flag: 'nuevo' })
+    const x = await xlsx.fromBlankAsync();
+    x.sheet(0).cell('A1').value('id');
+    x.sheet(0).cell('B1').value('nombre');
+
+    for (let i = 0; i < data.length; i++) {
+      const fila = i + 2;
+      x.sheet(0).cell(`A${fila}`).value(String(data[i]._id));
+      x.sheet(0).cell(`B${fila}`).value(data[i].nombre);
+    }
+    await x.toFileAsync('./tipoColor.xlsx');
+  }
+  async color() {
+    const data = await this.colorLenteModel.find({ flag: 'nuevo' })
+    const x = await xlsx.fromBlankAsync();
+    x.sheet(0).cell('A1').value('id');
+    x.sheet(0).cell('B1').value('nombre');
+
+    for (let i = 0; i < data.length; i++) {
+      const fila = i + 2;
+      x.sheet(0).cell(`A${fila}`).value(String(data[i]._id));
+      x.sheet(0).cell(`B${fila}`).value(data[i].nombre);
+    }
+    await x.toFileAsync('./color.xlsx');
+
+  }
+
+
+  async tipoLenteCargar() {
+    const filePath = path.join(
+      __dirname,
+      '../../tipoLente.xlsx',
+    );
+    const workbook = new Exceljs.Workbook()
+    await workbook.xlsx.readFile(filePath)
+    const hoja = workbook.getWorksheet(1)
+    hoja.eachRow(async (row, c) => {
+      if (c == 1) return
+      const id = row.getCell(1).value
+      const r = await this.tipoLenteModel.updateOne({ _id: new Types.ObjectId(String(id)) }, { logistica: true })
+      console.log(r);
+    })
+  }
+
+  async materialCargar() {
+    const filePath = path.join(
+      __dirname,
+      '../../material.xlsx',
+    );
+    const workbook = new Exceljs.Workbook()
+    await workbook.xlsx.readFile(filePath)
+    const hoja = workbook.getWorksheet(1)
+    hoja.eachRow(async (row, c) => {
+      if (c == 1) return
+      const id = row.getCell(1).value
+      const r = await this.materialLentesModel.updateOne({ _id: new Types.ObjectId(String(id)) }, { logistica: true })
+      console.log(r);
+    })
+
+  }
+  async tipoColorCargar() {
+    const filePath = path.join(
+      __dirname,
+      '../../tipoColor.xlsx',
+    );
+    const workbook = new Exceljs.Workbook()
+    await workbook.xlsx.readFile(filePath)
+    const hoja = workbook.getWorksheet(1)
+    hoja.eachRow(async (row, c) => {
+      if (c == 1) return
+      const id = row.getCell(1).value
+      const r = await this.tipoColorLenteModel.updateOne({ _id: new Types.ObjectId(String(id)) }, { logistica: true })
+      console.log(r);
+    })
+  }
+  async colorCargar() {
+    const filePath = path.join(
+      __dirname,
+      '../../color.xlsx',
+    );
+    const workbook = new Exceljs.Workbook()
+    await workbook.xlsx.readFile(filePath)
+    const hoja = workbook.getWorksheet(1)
+    hoja.eachRow(async (row, c) => {
+      if (c == 1) return
+      const id = row.getCell(1).value
+      const r = await this.colorLenteModel.updateOne({ _id: new Types.ObjectId(String(id)) }, { logistica: true })
+      console.log(r);
+    })
+  }
+
+
+  async descargarLente2() {
+    const lentes = await this.lenteModel.aggregate([
+      {
+        $match: {
+          flag: 'nuevo',
+          //tipo: "TERMINADO",
+          //tipoLente: new Types.ObjectId("5af4d8f10d41b4a9d1116862"),
+          // materialLentes: new Types.ObjectId("690c9fd1b41332480aa411a3")
+        }
+      },
+
+      {
+        $lookup: {
+          from: 'MaterialLentes',
+          foreignField: '_id',
+          localField: 'materialLentes',
+          as: 'materialLentes',
+        },
+      },
+      {
+        $unwind: { path: '$materialLentes', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $lookup: {
+          from: 'TipoLente',
+          foreignField: '_id',
+          localField: 'tipoLente',
+          as: 'tipoLente',
+        },
+      },
+      {
+        $unwind: { path: '$tipoLente', preserveNullAndEmptyArrays: true }
+      },
+
+      {
+        $lookup: {
+          from: 'TipoColorLente',
+          foreignField: '_id',
+          localField: 'tipoColorLente',
+          as: 'tipoColorLente',
+        },
+      },
+      {
+        $unwind: { path: '$tipoColorLente', preserveNullAndEmptyArrays: true }
+      },
+
+      {
+        $lookup: {
+          from: 'ColorLente',
+          foreignField: '_id',
+          localField: 'colorLente',
+          as: 'colorLente',
+        },
+      },
+      {
+        $unwind: { path: '$colorLente', preserveNullAndEmptyArrays: true }
+      },
+
+
+      {
+        $group: {
+          _id: {
+            tipo: "$tipo",
+            material: '$materialLentes.nombre',
+            tipoLente: '$tipoLente.nombre',
+            tipoColor: '$tipoColorLente.nombre',
+            color: '$colorLente.nombre',
+          },
+          tipo: { $first: "$tipo" },
+          material: { $first: '$materialLentes.nombre' },
+          tipoLente: { $first: '$tipoLente.nombre' },
+          tipoColor: { $first: '$tipoColorLente.nombre' },
+
+          color: { $first: '$colorLente.nombre' },
+        }
+      },
+
+
+      /* {
+         $lookup: {
+           from: 'Stock',
+           foreignField: 'lente',
+           localField: '_id',
+           as: 'stock',
+         },
+       },
+       {
+         $unwind: { path: '$stock', preserveNullAndEmptyArrays: true }
+       },*/
+
+      {
+        $project: {
+          tipo: 1,
+          material: 1,
+          tipoLente: 1,
+          tipoColor: 1,
+          color: 1,
+          // cantidad: '$stock.cantidad'
+        },
+      }
+    ])
+
+    const x = await xlsx.fromBlankAsync();
+
+    x.sheet(0).cell('A1').value('tipo');
+    x.sheet(0).cell('B1').value('tipo lente');
+    x.sheet(0).cell('C1').value('material');
+    x.sheet(0).cell('D1').value('tipo color');
+    x.sheet(0).cell('E1').value('color');
+    x.sheet(0).cell('F1').value('activo');
+
+
+
+    for (let i = 0; i < lentes.length; i++) {
+      const fila = i + 2;
+      x.sheet(0).cell(`A${fila}`).value(lentes[i].tipo);
+      x.sheet(0).cell(`B${fila}`).value(lentes[i].tipoLente);
+      x.sheet(0).cell(`C${fila}`).value(lentes[i].material);
+      x.sheet(0).cell(`D${fila}`).value(lentes[i].tipoColor);
+      x.sheet(0).cell(`E${fila}`).value(lentes[i].color);;
+
+    }
+    await x.toFileAsync('./combinacionLentes.xlsx');
+  }
+  async combinacionesLente() {
+    const filePath = path.join(
+      __dirname,
+      '../../combinacionesR.xlsx',
+    );
+    const workbook = new Exceljs.Workbook()
+    await workbook.xlsx.readFile(filePath)
+    const hoja = workbook.getWorksheet(1)
+    hoja.eachRow(async (row, c) => {
+      if (c == 1) return
+      const tipo = row.getCell(1).value
+      const tipoLente = row.getCell(2).value
+      const material = row.getCell(3).value
+      const tipoColor = row.getCell(4).value
+      const color = row.getCell(5).value
+      const estado = row.getCell(6).value
+
+      const [
+        materiales,
+        tiposLente,
+        tipoColorLente,
+        colorL
+
+      ] = await Promise.all([
+
+        this.materialLentesModel.find({ nombre: String(material) }),
+        this.tipoLenteModel.find({ nombre: String(tipoLente) }),
+
+        this.tipoColorLenteModel.find({ nombre: String(tipoColor) }),
+        this.colorLenteModel.find({ nombre: String(color) })
+
+      ]);
+      console.log('--------------------');
+      let flag = ''
+      if (estado == '1') {
+        flag = 'nuevo'
+      } else {
+        flag = 'inhabilitado'
+      }
+      const data: lenteI2 = {
+        tipo: String(tipo).trim(),
+        flag: flag
+
+      }
+
+      if (materiales.length > 0) {
+        const m = materiales.filter((item) => item.flag === 'nuevo')
+        if (m.length > 0) {
+          data.material = m[0]._id
+        }
+      }
+
+      if (tiposLente.length > 0) {
+
+        const m = tiposLente.filter((item) => item.flag === 'nuevo')
+        if (m.length > 0) {
+          data.tipoLente = m[0]._id
+        }
+      }
+
+      if (tipoColorLente.length > 0) {
+        const m = tipoColorLente.filter((item) => item.flag === 'nuevo')
+        if (m.length > 0) {
+          data.tipoColorLente = m[0]._id
+        }
+      }
+
+
+
+      if (colorL.length > 0) {
+        const m = colorL.filter((item) => item.flag === 'nuevo')
+        if (m.length > 0) {
+          data.color = m[0]._id
+        }
+      }
+
+      if (Object.keys(data).length == 6) {
+        const l = await this.lenteCombinacion.findOne(data)
+        if (!l) {
+          await this.lenteCombinacion.create(data)
+        }
+      }
+    })
+  }
+}
 

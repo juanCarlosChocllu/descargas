@@ -38,6 +38,9 @@ export class MaterialLentes {
   nombre: string;
   @Prop()
   flag: string;
+
+  @Prop()
+  logistica: boolean
 }
 export const MaterialLentesSchema =
   SchemaFactory.createForClass(MaterialLentes);
@@ -48,6 +51,9 @@ export class TipoLente {
   nombre: string;
   @Prop()
   flag: string;
+
+  @Prop()
+  logistica: boolean
 }
 export const TipoLenteSchema = SchemaFactory.createForClass(TipoLente);
 
@@ -57,6 +63,9 @@ export class TipoColorLente {
   nombre: string;
   @Prop()
   flag: string;
+
+  @Prop()
+  logistica: boolean
 }
 export const TipoColorLenteSchema =
   SchemaFactory.createForClass(TipoColorLente);
@@ -94,6 +103,9 @@ export class ColorLente {
   nombre: string;
   @Prop()
   flag: string;
+
+  @Prop()
+  logistica: boolean
 }
 export const ColorLenteSchema = SchemaFactory.createForClass(ColorLente);
 
@@ -141,6 +153,8 @@ export class Lente {
 
   @Prop()
   codigo: string;
+  @Prop()
+  tipo: string;
 
   @Prop({ type: Types.ObjectId, ref: 'MaterialLente' })
   materialLentes: Types.ObjectId;
@@ -162,3 +176,30 @@ export class Lente {
 }
 export const LenteSchema =
   SchemaFactory.createForClass(Lente);
+
+
+
+
+@Schema({ collection: 'CombinacionLente' })
+export class LenteCombinacion {
+
+  @Prop()
+  tipo: string;
+  @Prop({ type: Types.ObjectId, ref: 'MaterialLente' })
+  material: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'TipoLente' })
+  tipoLente: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'TipoColorLente' })
+  tipoColorLente: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'ColorLente' })
+  color: Types.ObjectId;
+
+
+  @Prop()
+  flag: string
+
+}
+export const LenteCombinacionSchema =
+  SchemaFactory.createForClass(LenteCombinacion);
+

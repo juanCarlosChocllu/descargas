@@ -22,7 +22,9 @@ import {
   TipoLenteSchema,
   Tratamiento,
   tratamientoSchema,
-  Lente
+  Lente,
+  LenteCombinacion,
+  LenteCombinacionSchema
 } from './schema/precios-receta.schema';
 import { Precio } from 'src/schema';
 import { precioSchema } from 'src/productos/schema/producto.schema';
@@ -44,6 +46,7 @@ import { HttpModule } from '@nestjs/axios';
       { name: Precio.name, schema: precioSchema },
       { name: MapRecetaNovar.name, schema: MapRecetaNovaraSchema },
         { name: Lente.name, schema: LenteSchema },
+         { name: LenteCombinacion.name, schema: LenteCombinacionSchema },
     ]),
   ],
   controllers: [PreciosRecetaController],

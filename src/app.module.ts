@@ -13,7 +13,7 @@ import { ProductosModule } from './productos/productos.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://kanna:kanna@localhost:27017/oc12122025?authSource=admin'),
+    MongooseModule.forRoot('mongodb://kanna:kanna@localhost:27017/oc09022026?authSource=admin'),
     MongooseModule.forFeature([
      /* {name:Lente.name, schema:LentesSchema}*/,
       {name:Stock.name, schema:StockSchema},
