@@ -24,7 +24,15 @@ import {
   tratamientoSchema,
   Lente,
   LenteCombinacion,
-  LenteCombinacionSchema
+  LenteCombinacionSchema,
+  Marca,
+  MarcaSchema,
+  Empresa,
+  EmpresaSchema,
+  DetalleRecetaNovarSchema,
+  DetalleRecetaNovar,
+  CategoriaMarca,
+  CategoriaMarcaSchema
 } from './schema/precios-receta.schema';
 import { Precio } from 'src/schema';
 import { precioSchema } from 'src/productos/schema/producto.schema';
@@ -45,11 +53,15 @@ import { HttpModule } from '@nestjs/axios';
       { name: ColorLente.name, schema: ColorLenteSchema },
       { name: Precio.name, schema: precioSchema },
       { name: MapRecetaNovar.name, schema: MapRecetaNovaraSchema },
-        { name: Lente.name, schema: LenteSchema },
-         { name: LenteCombinacion.name, schema: LenteCombinacionSchema },
+      { name: Lente.name, schema: LenteSchema },
+      { name: LenteCombinacion.name, schema: LenteCombinacionSchema },
+      { name: Marca.name, schema: MarcaSchema },
+      { name: Empresa.name, schema: EmpresaSchema },
+      { name: DetalleRecetaNovar.name, schema: DetalleRecetaNovarSchema },
+      { name: CategoriaMarca.name, schema: CategoriaMarcaSchema },
     ]),
   ],
   controllers: [PreciosRecetaController],
   providers: [PreciosRecetaService],
 })
-export class PreciosRecetaModule {}
+export class PreciosRecetaModule { }

@@ -13,7 +13,7 @@ import { UpdatePreciosRecetaDto } from './dto/update-precios-receta.dto';
 
 @Controller('precios/receta')
 export class PreciosRecetaController {
-  constructor(private readonly preciosRecetaService: PreciosRecetaService) {}
+  constructor(private readonly preciosRecetaService: PreciosRecetaService) { }
 
   @Post()
   create(@Body() createPreciosRecetaDto: CreatePreciosRecetaDto) {
@@ -59,11 +59,11 @@ export class PreciosRecetaController {
     return this.preciosRecetaService.actualizarRangos();
   }
 
-    @Get('descargar/lente')
+  @Get('descargar/lente')
   descargarLente() {
     return this.preciosRecetaService.descargarLente();
   }
-  
+
   @Get('descargar/combinacion')
   descargarLente2() {
     return this.preciosRecetaService.descargarLente2();
@@ -74,7 +74,7 @@ export class PreciosRecetaController {
     return this.preciosRecetaService.reorganizarLente();
   }
 
-  
+
   @Get('tipoLente')
   tipoLente() {
     return this.preciosRecetaService.tipoLente();
@@ -93,7 +93,7 @@ export class PreciosRecetaController {
   }
 
 
-    @Get('tipoLente/cargar')
+  @Get('tipoLente/cargar')
   tipoLentecargar() {
     return this.preciosRecetaService.tipoLenteCargar();
   }
@@ -116,4 +116,26 @@ export class PreciosRecetaController {
   }
 
 
+  @Get('generarMarca')
+  generarMarca() {
+    return this.preciosRecetaService.generarMarcas();
+  }
+
+
+  @Get('actualizarRecetaMap')
+  actualizarRecetaMap() {
+    return this.preciosRecetaService.actualizarRecetaMap();
+  }
+  @Get('eliminar')
+  eliminar() {
+    return this.preciosRecetaService.eliminarMapNovar();
+  }
+
+
+  ////
+
+   @Get('catorizarProducto')
+  catorizarProducto() {
+    return this.preciosRecetaService.catorizarProducto();
+  }
 }

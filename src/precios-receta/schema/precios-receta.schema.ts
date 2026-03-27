@@ -143,6 +143,9 @@ export class MapRecetaNovar {
 
   @Prop()
   responseNovar: string
+
+  @Prop()
+  precioReceta: Types.ObjectId
 }
 export const MapRecetaNovaraSchema =
   SchemaFactory.createForClass(MapRecetaNovar);
@@ -203,3 +206,71 @@ export class LenteCombinacion {
 export const LenteCombinacionSchema =
   SchemaFactory.createForClass(LenteCombinacion);
 
+
+@Schema({ collection: 'Marca' })
+export class Marca {
+  @Prop()
+  nombre: string
+
+  @Prop()
+  flag: string
+
+}
+export const MarcaSchema =
+  SchemaFactory.createForClass(Marca);
+
+
+@Schema({ collection: 'Empresa' })
+export class Empresa {
+  @Prop()
+  nombre: string
+
+  @Prop()
+  flag: string
+
+}
+export const EmpresaSchema =
+  SchemaFactory.createForClass(Empresa);
+
+
+
+@Schema({ collection: 'DetalleRecetaNovar' })
+export class DetalleRecetaNovar {
+  @Prop()
+  precioReceta: Types.ObjectId
+
+
+  @Prop()
+  mapRecetaNovar: Types.ObjectId
+
+  @Prop({ default: 'nuevo' })
+  flag: string
+
+  @Prop({ default: Date.now() })
+  fecha: Date
+
+
+}
+export const DetalleRecetaNovarSchema =
+  SchemaFactory.createForClass(DetalleRecetaNovar);
+
+
+
+@Schema({ collection: 'CategoriaMarca' })
+export class CategoriaMarca {
+  @Prop()
+  empresa: Types.ObjectId
+
+  @Prop()
+  marca: Types.ObjectId
+
+  @Prop()
+  nombre: string
+
+  @Prop({ default: 'nuevo' })
+  flag: string
+
+
+}
+export const CategoriaMarcaSchema =
+  SchemaFactory.createForClass(CategoriaMarca);

@@ -1,4 +1,4 @@
-import { HttpCode, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpCode, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreatePreciosRecetaDto } from './dto/create-precios-receta.dto';
 import { UpdatePreciosRecetaDto } from './dto/update-precios-receta.dto';
 import mongoose from 'mongoose';
@@ -14,7 +14,11 @@ import {
   TipoLente,
   Tratamiento,
   Lente,
-  LenteCombinacion
+  LenteCombinacion,
+  Marca,
+  Empresa,
+  DetalleRecetaNovar,
+  CategoriaMarca
 } from './schema/precios-receta.schema';
 import { Model, Types } from 'mongoose';
 import * as xlsx from 'xlsx-populate';
@@ -100,6 +104,19 @@ export class PreciosRecetaService {
 
     @InjectModel(LenteCombinacion.name)
     private readonly lenteCombinacion: Model<LenteCombinacion>,
+
+
+    @InjectModel(Marca.name)
+    private readonly marca: Model<Marca>,
+
+    @InjectModel(Empresa.name)
+    private readonly empresa: Model<Empresa>,
+
+    @InjectModel(DetalleRecetaNovar.name)
+    private readonly DetalleRecetaNovar: Model<DetalleRecetaNovar>,
+
+    @InjectModel(CategoriaMarca.name)
+    private readonly categoriaMarca: Model<CategoriaMarca>,
 
     private readonly httpService: HttpService,
   ) { }
@@ -366,6 +383,41 @@ export class PreciosRecetaService {
       }
     }
   }
+
+  async generarMarcas() {
+    const marca = await this.marca.find();
+
+    const x = await xlsx.fromBlankAsync();
+    x.sheet(0).cell(`A1`).value('id');
+    x.sheet(0).cell(`B1`).value('nombre');
+    x.sheet(0).cell(`C1`).value('empresa');
+    x.sheet(0).cell(`D1`).value('categoria');
+
+    let row = 2
+    for (let index = 0; index < marca.length; index++) {
+      const empresa = await this.empresa.find({
+        nombre: { $nin: ['MINISO', 'OPTILAB'] }, flag: 'nuevo'
+      });
+      for (let index2 = 0; index2 < empresa.length; index2++) {
+        x.sheet(0)
+          .cell(`A${row}`)
+          .value(String(marca[index]._id));
+        x.sheet(0)
+          .cell(`B${row}`)
+          .value(marca[index].nombre);
+        x.sheet(0)
+          .cell(`C${row}`)
+          .value(empresa[index2].nombre);
+        row++
+
+      }
+
+
+    }
+    await x.toFileAsync('./marcasMia.xlsx');
+    return marca;
+  }
+
 
   async findAll() {
     const precio = await this.precioReceta.aggregate([
@@ -1743,5 +1795,138 @@ export class PreciosRecetaService {
       }
     })
   }
-}
 
+  async actualizarRecetaMap() {
+    const r = await this.precioReceta.aggregate([
+      {
+        $match: {
+          "flag": flag.nuevo
+        },
+      },
+      {
+        $group: {
+          _id: {
+            materiallente: '$materiallente',
+            tipolente: '$tipolente',
+            rango: '$rango',
+            tipocolorlente: '$tipocolorlente',
+            colorlente: '$colorlente',
+            marcalente: '$marcalente',
+            tratamiento: '$tratamiento',
+          },
+          ids: { $push: '$_id' }
+        },
+
+      },
+      {
+        $project: {
+          materiallente: '$_id.materiallente',
+          tipolente: '$_id.tipolente',
+          rango: '$_id.rango',
+          tipocolorlente: '$_id.tipocolorlente',
+          colorlente: '$_id.colorlente',
+          marcalente: '$_id.marcalente',
+          tratamiento: '$_id.tratamiento',
+          ids: 1
+        }
+      }
+
+    ])
+    for (const item of r) {
+
+      const map = await this.mapRecetaNovar.findOne({
+        materialLentes: item.materiallente,
+        tipoColorLente: item.tipocolorlente,
+        tipoLente: item.tipolente,
+        rango: item.rango,
+        tratamiento: item.tratamiento,
+        marcaLente: item.marcalente,
+        colorLente: item.colorlente
+      })
+      if (map) {
+        for (const id of item.ids) {
+
+          await this.DetalleRecetaNovar.create({
+            mapRecetaNovar: map._id,
+            precioReceta: id,
+
+          })
+
+        }
+      }
+
+
+    }
+
+
+  }
+
+  async eliminarMapNovar() {
+    const grupos = await this.mapRecetaNovar.aggregate([
+      {
+        $group: {
+          _id: {
+            materiallente: '$materialLentes',
+            tipolente: '$tipoLente',
+            rango: '$rango',
+            tipocolorlente: '$tipoColorLente',
+            colorlente: '$colorLente',
+            marcalente: '$marcaLente',
+            tratamiento: '$tratamiento',
+          },
+          ids: { $push: '$_id' },
+          cantidad: { $sum: 1 }
+        }
+      }
+    ])
+    for (const item of grupos) {
+
+      if (item.cantidad > 1) {
+        const [keep, ...eliminar] = item.ids
+
+        console.log("Mantener:", keep)
+        console.log("Eliminar:", eliminar)
+
+        await this.mapRecetaNovar.deleteMany({
+          _id: { $in: eliminar }
+        })
+      }
+    }
+  }
+
+
+  async catorizarProducto() {
+    const filePath = path.join(
+      __dirname,
+      '../../marcasMiaV2.xlsx',
+    );
+    const workbook = new Exceljs.stream.xlsx.WorkbookReader(filePath, {
+      entries: 'emit',
+    });
+
+    let contador = 0;
+    for await (const hojas of workbook) {
+      for await (const hoja of hojas) {
+        if (contador == 1) {
+          continue
+        }
+        const marcaId = hoja.getCell(1).value
+        const empresa = hoja.getCell(3).value
+        const categoria = hoja.getCell(4).value
+
+        if (!marcaId || !empresa || !categoria) continue
+
+        const e = await this.empresa.findOne({ nombre: empresa })
+        if (e) {
+          const cat = await this.categoriaMarca.findOne({ empresa: e._id, nombre: categoria, marca: new Types.ObjectId(marcaId.toString()) })
+          if (!cat) {
+            await this.categoriaMarca.create({ empresa: e._id, nombre: categoria, marca: new Types.ObjectId(marcaId.toString()) })
+          }
+        }
+    
+
+
+      }
+    }
+  }
+}
